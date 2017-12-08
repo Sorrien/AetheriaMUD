@@ -13,6 +13,8 @@ namespace AetheriaWebService.Migrations
                 columns: table => new
                 {
                     CharacterStatsId = table.Column<Guid>(nullable: false),
+                    BaseMaximumActionPoints = table.Column<double>(nullable: false),
+                    BaseMaximumHealthPoints = table.Column<double>(nullable: false),
                     CurrentActionPoints = table.Column<double>(nullable: false),
                     CurrentHealthPoints = table.Column<double>(nullable: false),
                     Level = table.Column<int>(nullable: false)
@@ -34,24 +36,11 @@ namespace AetheriaWebService.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Positions",
-                columns: table => new
-                {
-                    PositionId = table.Column<Guid>(nullable: false),
-                    X = table.Column<int>(nullable: false),
-                    Y = table.Column<int>(nullable: false),
-                    Z = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Positions", x => x.PositionId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Worlds",
                 columns: table => new
                 {
-                    WorldId = table.Column<Guid>(nullable: false)
+                    WorldId = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -70,11 +59,10 @@ namespace AetheriaWebService.Migrations
                     InventoryId = table.Column<Guid>(nullable: true),
                     Name = table.Column<string>(nullable: true),
                     Type = table.Column<int>(nullable: false),
-                    CharacterEntityId1 = table.Column<Guid>(nullable: true),
+                    CharacterEntityId = table.Column<Guid>(nullable: true),
                     ResistAmount = table.Column<double>(nullable: true),
                     ResistType = table.Column<int>(nullable: true),
                     SlotType = table.Column<int>(nullable: true),
-                    CharacterEntityId = table.Column<Guid>(nullable: true),
                     BaseAPCost = table.Column<double>(nullable: true),
                     BaseDamageValue = table.Column<double>(nullable: true),
                     DamageType = table.Column<int>(nullable: true)
@@ -101,12 +89,6 @@ namespace AetheriaWebService.Migrations
                         principalColumn: "InventoryId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Entities_Entities_CharacterEntityId1",
-                        column: x => x.CharacterEntityId1,
-                        principalTable: "Entities",
-                        principalColumn: "EntityId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_Entities_Entities_CharacterEntityId",
                         column: x => x.CharacterEntityId,
                         principalTable: "Entities",
@@ -121,8 +103,10 @@ namespace AetheriaWebService.Migrations
                     CellId = table.Column<Guid>(nullable: false),
                     Description = table.Column<string>(nullable: true),
                     InventoryId = table.Column<Guid>(nullable: true),
-                    PositionId = table.Column<Guid>(nullable: true),
-                    WorldId = table.Column<Guid>(nullable: true)
+                    WorldId = table.Column<Guid>(nullable: true),
+                    X = table.Column<int>(nullable: false),
+                    Y = table.Column<int>(nullable: false),
+                    Z = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -132,12 +116,6 @@ namespace AetheriaWebService.Migrations
                         column: x => x.InventoryId,
                         principalTable: "Inventories",
                         principalColumn: "InventoryId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Cells_Positions_PositionId",
-                        column: x => x.PositionId,
-                        principalTable: "Positions",
-                        principalColumn: "PositionId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Cells_Worlds_WorldId",
@@ -206,11 +184,6 @@ namespace AetheriaWebService.Migrations
                 column: "InventoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cells_PositionId",
-                table: "Cells",
-                column: "PositionId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Cells_WorldId",
                 table: "Cells",
                 column: "WorldId");
@@ -246,11 +219,6 @@ namespace AetheriaWebService.Migrations
                 column: "InventoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Entities_CharacterEntityId1",
-                table: "Entities",
-                column: "CharacterEntityId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Entities_CharacterEntityId",
                 table: "Entities",
                 column: "CharacterEntityId");
@@ -266,9 +234,6 @@ namespace AetheriaWebService.Migrations
 
             migrationBuilder.DropTable(
                 name: "Effects");
-
-            migrationBuilder.DropTable(
-                name: "Positions");
 
             migrationBuilder.DropTable(
                 name: "Worlds");

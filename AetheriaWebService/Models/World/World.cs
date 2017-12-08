@@ -9,7 +9,7 @@ namespace AetheriaWebService.Models
     {
         public Guid WorldId { get; set; }
 
-
+        public string Name { get; set; }
         public List<Cell> Cells { get; set; }
     }
 }

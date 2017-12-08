@@ -30,15 +30,17 @@ namespace AetheriaWebService.Migrations
 
                     b.Property<Guid?>("InventoryId");
 
-                    b.Property<Guid?>("PositionId");
-
                     b.Property<Guid?>("WorldId");
+
+                    b.Property<int>("X");
+
+                    b.Property<int>("Y");
+
+                    b.Property<int>("Z");
 
                     b.HasKey("CellId");
 
                     b.HasIndex("InventoryId");
-
-                    b.HasIndex("PositionId");
 
                     b.HasIndex("WorldId");
 
@@ -49,6 +51,10 @@ namespace AetheriaWebService.Migrations
                 {
                     b.Property<Guid>("CharacterStatsId")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<double>("BaseMaximumActionPoints");
+
+                    b.Property<double>("BaseMaximumHealthPoints");
 
                     b.Property<double>("CurrentActionPoints");
 
@@ -148,26 +154,12 @@ namespace AetheriaWebService.Migrations
                     b.ToTable("Inventories");
                 });
 
-            modelBuilder.Entity("AetheriaWebService.Models.Position", b =>
-                {
-                    b.Property<Guid>("PositionId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("X");
-
-                    b.Property<int>("Y");
-
-                    b.Property<int>("Z");
-
-                    b.HasKey("PositionId");
-
-                    b.ToTable("Positions");
-                });
-
             modelBuilder.Entity("AetheriaWebService.Models.World", b =>
                 {
                     b.Property<Guid>("WorldId")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name");
 
                     b.HasKey("WorldId");
 
@@ -195,9 +187,6 @@ namespace AetheriaWebService.Migrations
                 {
                     b.HasBaseType("AetheriaWebService.Models.Entity");
 
-                    b.Property<Guid?>("CharacterEntityId");
-
-                    b.HasIndex("CharacterEntityId");
 
                     b.ToTable("Item");
 
@@ -228,7 +217,7 @@ namespace AetheriaWebService.Migrations
                 {
                     b.HasBaseType("AetheriaWebService.Models.Item");
 
-                    b.Property<Guid?>("CharacterEntityId1");
+                    b.Property<Guid?>("CharacterEntityId");
 
                     b.Property<double>("ResistAmount");
 
@@ -236,7 +225,7 @@ namespace AetheriaWebService.Migrations
 
                     b.Property<int>("SlotType");
 
-                    b.HasIndex("CharacterEntityId1");
+                    b.HasIndex("CharacterEntityId");
 
                     b.ToTable("Equipment");
 
@@ -264,10 +253,6 @@ namespace AetheriaWebService.Migrations
                         .WithMany()
                         .HasForeignKey("InventoryId");
 
-                    b.HasOne("AetheriaWebService.Models.Position", "Position")
-                        .WithMany()
-                        .HasForeignKey("PositionId");
-
                     b.HasOne("AetheriaWebService.Models.World", "World")
                         .WithMany("Cells")
                         .HasForeignKey("WorldId");
@@ -293,7 +278,7 @@ namespace AetheriaWebService.Migrations
 
             modelBuilder.Entity("AetheriaWebService.Models.Entity", b =>
                 {
-                    b.HasOne("AetheriaWebService.Models.Inventory")
+                    b.HasOne("AetheriaWebService.Models.Inventory", "Inventory")
                         .WithMany("Entities")
                         .HasForeignKey("InventoryId");
                 });
@@ -309,18 +294,11 @@ namespace AetheriaWebService.Migrations
                         .HasForeignKey("StatsCharacterStatsId");
                 });
 
-            modelBuilder.Entity("AetheriaWebService.Models.Item", b =>
-                {
-                    b.HasOne("AetheriaWebService.Models.Character")
-                        .WithMany("Inventory")
-                        .HasForeignKey("CharacterEntityId");
-                });
-
             modelBuilder.Entity("AetheriaWebService.Models.Equipment", b =>
                 {
                     b.HasOne("AetheriaWebService.Models.Character")
                         .WithMany("WornEquipment")
-                        .HasForeignKey("CharacterEntityId1");
+                        .HasForeignKey("CharacterEntityId");
                 });
 #pragma warning restore 612, 618
         }

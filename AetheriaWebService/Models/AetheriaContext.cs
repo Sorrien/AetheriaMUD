@@ -8,11 +8,15 @@ namespace AetheriaWebService.Models
 {
     public class AetheriaContext : DbContext
     {
-        public static string ConnectionString { get; set; }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public AetheriaContext(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS;Database=AetheriaContext;Trusted_Connection=True;");
+
         }
+
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS;Database=AetheriaContext;Trusted_Connection=True;");
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,7 +25,6 @@ namespace AetheriaWebService.Models
 
         public virtual DbSet<World> Worlds { get; set; }
         public virtual DbSet<Cell> Cells { get; set; }
-        public virtual DbSet<Position> Positions { get; set; }
 
         public virtual DbSet<Entity> Entities { get; set; }   
         public virtual DbSet<Character> Characters { get; set; }

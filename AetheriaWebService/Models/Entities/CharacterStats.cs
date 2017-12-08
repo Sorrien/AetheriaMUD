@@ -20,11 +20,15 @@ namespace AetheriaWebService.Models
         public double CurrentHealthPoints { get; set; }
         public double CurrentActionPoints { get; set; }
 
+        public double BaseMaximumHealthPoints { get; set; }
+
+        public double BaseMaximumActionPoints { get; set; }
+
         public double MaximumHealthPoints
         {
             get
             {
-                var maxhp = 10d;
+                var maxhp = BaseMaximumHealthPoints;
 
                 maxhp = CalculateAffectedStat(maxhp, EStatType.MaxHealth);
 
@@ -36,7 +40,7 @@ namespace AetheriaWebService.Models
         {
             get
             {
-                var maxap = 10d;
+                var maxap = BaseMaximumActionPoints;
 
                 maxap = CalculateAffectedStat(maxap, EStatType.MaxActionPoints);
 

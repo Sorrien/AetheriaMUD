@@ -13,11 +13,17 @@ namespace AetheriaWebService.Controllers
     [Route("api/UserInput")]
     public class UserInputController : Controller
     {
+        private AetheriaContext db;
+        public UserInputController(AetheriaContext context)
+        {
+            db = context;
+        }
         // GET api/values/5
-        [HttpGet("{input}")]
+        [HttpGet("{input}, {chatUsername}")]
         public string Get(string input, string chatUsername)
         {
-            var aetheriaHelper = new AetheriaHelper();
+            var aetheriaDataAccess = new DataAccess.AetheriaDataAccess(db);
+            var aetheriaHelper = new AetheriaHelper(aetheriaDataAccess);
             Player player = aetheriaHelper.GetPlayer(chatUsername);
             string response = aetheriaHelper.ProcessPlayerInput(input, player);
             return response;

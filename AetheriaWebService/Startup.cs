@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using AetheriaWebService.Models;
+using Microsoft.EntityFrameworkCore;
+using AetheriaWebService.Helpers;
 
 namespace AetheriaWebService
 {
@@ -28,7 +30,8 @@ namespace AetheriaWebService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            AetheriaContext.ConnectionString = Configuration.GetConnectionString("AetheriaContext");
+            services.AddDbContext<AetheriaContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("AetheriaContext")));
             // Add framework services.
             services.AddMvc();
         }
@@ -38,6 +41,15 @@ namespace AetheriaWebService
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            if (env.IsDevelopment())
+            {
+                using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+                {
+                    serviceScope.ServiceProvider.GetService<AetheriaContext>().Database.Migrate();
+                    serviceScope.ServiceProvider.GetService<AetheriaContext>().EnsureSeedData();
+                }
+            }
 
             app.UseMvc();
         }
