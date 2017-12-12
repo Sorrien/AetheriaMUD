@@ -52,6 +52,7 @@ namespace AetheriaWebService.Migrations
                 columns: table => new
                 {
                     EquippedWeaponEntityId = table.Column<Guid>(nullable: true),
+                    InventoryId1 = table.Column<Guid>(nullable: true),
                     StatsCharacterStatsId = table.Column<Guid>(nullable: true),
                     EntityId = table.Column<Guid>(nullable: false),
                     Description = table.Column<string>(nullable: true),
@@ -75,6 +76,12 @@ namespace AetheriaWebService.Migrations
                         column: x => x.EquippedWeaponEntityId,
                         principalTable: "Entities",
                         principalColumn: "EntityId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Entities_Inventories_InventoryId1",
+                        column: x => x.InventoryId1,
+                        principalTable: "Inventories",
+                        principalColumn: "InventoryId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Entities_CharacterStats_StatsCharacterStatsId",
@@ -102,7 +109,7 @@ namespace AetheriaWebService.Migrations
                 {
                     CellId = table.Column<Guid>(nullable: false),
                     Description = table.Column<string>(nullable: true),
-                    InventoryId = table.Column<Guid>(nullable: true),
+                    InventoryId = table.Column<Guid>(nullable: false),
                     WorldId = table.Column<Guid>(nullable: true),
                     X = table.Column<int>(nullable: false),
                     Y = table.Column<int>(nullable: false),
@@ -116,7 +123,7 @@ namespace AetheriaWebService.Migrations
                         column: x => x.InventoryId,
                         principalTable: "Inventories",
                         principalColumn: "InventoryId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Cells_Worlds_WorldId",
                         column: x => x.WorldId,
@@ -130,6 +137,7 @@ namespace AetheriaWebService.Migrations
                 columns: table => new
                 {
                     ChatUserId = table.Column<Guid>(nullable: false),
+                    LastMessageDate = table.Column<DateTime>(nullable: false),
                     Platform = table.Column<string>(nullable: true),
                     PlayerEntityId = table.Column<Guid>(nullable: true),
                     UserId = table.Column<string>(nullable: true),
@@ -209,6 +217,11 @@ namespace AetheriaWebService.Migrations
                 column: "EquippedWeaponEntityId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Entities_InventoryId1",
+                table: "Entities",
+                column: "InventoryId1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Entities_StatsCharacterStatsId",
                 table: "Entities",
                 column: "StatsCharacterStatsId");
@@ -242,10 +255,10 @@ namespace AetheriaWebService.Migrations
                 name: "Entities");
 
             migrationBuilder.DropTable(
-                name: "CharacterStats");
+                name: "Inventories");
 
             migrationBuilder.DropTable(
-                name: "Inventories");
+                name: "CharacterStats");
         }
     }
 }

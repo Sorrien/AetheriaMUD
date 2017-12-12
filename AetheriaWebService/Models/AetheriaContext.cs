@@ -8,7 +8,7 @@ namespace AetheriaWebService.Models
 {
     public class AetheriaContext : DbContext
     {
-        public AetheriaContext(DbContextOptionsBuilder optionsBuilder)
+        public AetheriaContext(DbContextOptions options) : base(options)
         {
 
         }

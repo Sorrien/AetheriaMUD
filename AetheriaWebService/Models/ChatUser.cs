@@ -11,5 +11,6 @@ namespace AetheriaWebService.Models
         public string UserId { get; set; }
         public string Username { get; set; }
         public string Platform { get; set; }
+        public DateTime LastMessageDate { get; set; }
     }
 }

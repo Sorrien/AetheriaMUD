@@ -14,11 +14,6 @@ namespace AetheriaWebService.Helpers
         public AetheriaHelper(AetheriaDataAccess dataAccess) {
             aetheriaDataAccess = dataAccess;
         }
-        public Player GetPlayer(string chatUsername)
-        {
-
-            return new Player();
-        }
 
         public string ProcessPlayerInput(string input, Player player)
         {
@@ -147,6 +142,10 @@ namespace AetheriaWebService.Helpers
                 response += "You move " + direction.ToString() + ".\n";
                 response += newCell.Description + " " + newCell.EntitiesDescription;
                 aetheriaDataAccess.UpdateEntityCell(player, newCell);
+            }
+            else
+            {
+                response += "You cannot go any further in this direction.";
             }
             return response;
         }

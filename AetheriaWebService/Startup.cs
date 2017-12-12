@@ -10,28 +10,26 @@ using Microsoft.Extensions.Logging;
 using AetheriaWebService.Models;
 using Microsoft.EntityFrameworkCore;
 using AetheriaWebService.Helpers;
+using AetheriaWebService.Hubs;
 
 namespace AetheriaWebService
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AetheriaContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("AetheriaContext")));
+
+            services.AddSignalR();
             // Add framework services.
             services.AddMvc();
         }
@@ -42,14 +40,15 @@ namespace AetheriaWebService
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            if (env.IsDevelopment())
+            //if (env.IsDevelopment())
+            //{
+
+            //}
+
+            app.UseSignalR(routes =>
             {
-                using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-                {
-                    serviceScope.ServiceProvider.GetService<AetheriaContext>().Database.Migrate();
-                    serviceScope.ServiceProvider.GetService<AetheriaContext>().EnsureSeedData();
-                }
-            }
+                routes.MapHub<AetheriaHub>("AetheriaHub");
+            });
 
             app.UseMvc();
         }

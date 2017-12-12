@@ -25,6 +25,7 @@ namespace AetheriaWebService.Models
         public int Y { get; set; }
         public int Z { get; set; }
 
+        public Guid InventoryId { get; set; }
         public Inventory Inventory { get; set; }
         public World World { get; set; }
 

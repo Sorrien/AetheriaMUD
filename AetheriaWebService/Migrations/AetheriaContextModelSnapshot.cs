@@ -28,7 +28,7 @@ namespace AetheriaWebService.Migrations
 
                     b.Property<string>("Description");
 
-                    b.Property<Guid?>("InventoryId");
+                    b.Property<Guid>("InventoryId");
 
                     b.Property<Guid?>("WorldId");
 
@@ -71,6 +71,8 @@ namespace AetheriaWebService.Migrations
                 {
                     b.Property<Guid>("ChatUserId")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("LastMessageDate");
 
                     b.Property<string>("Platform");
 
@@ -172,9 +174,13 @@ namespace AetheriaWebService.Migrations
 
                     b.Property<Guid?>("EquippedWeaponEntityId");
 
+                    b.Property<Guid?>("InventoryId1");
+
                     b.Property<Guid?>("StatsCharacterStatsId");
 
                     b.HasIndex("EquippedWeaponEntityId");
+
+                    b.HasIndex("InventoryId1");
 
                     b.HasIndex("StatsCharacterStatsId");
 
@@ -251,7 +257,8 @@ namespace AetheriaWebService.Migrations
                 {
                     b.HasOne("AetheriaWebService.Models.Inventory", "Inventory")
                         .WithMany()
-                        .HasForeignKey("InventoryId");
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AetheriaWebService.Models.World", "World")
                         .WithMany("Cells")
@@ -278,7 +285,7 @@ namespace AetheriaWebService.Migrations
 
             modelBuilder.Entity("AetheriaWebService.Models.Entity", b =>
                 {
-                    b.HasOne("AetheriaWebService.Models.Inventory", "Inventory")
+                    b.HasOne("AetheriaWebService.Models.Inventory")
                         .WithMany("Entities")
                         .HasForeignKey("InventoryId");
                 });
@@ -288,6 +295,10 @@ namespace AetheriaWebService.Migrations
                     b.HasOne("AetheriaWebService.Models.Weapon", "EquippedWeapon")
                         .WithMany()
                         .HasForeignKey("EquippedWeaponEntityId");
+
+                    b.HasOne("AetheriaWebService.Models.Inventory", "Inventory")
+                        .WithMany()
+                        .HasForeignKey("InventoryId1");
 
                     b.HasOne("AetheriaWebService.Models.CharacterStats", "Stats")
                         .WithMany()
