@@ -1,4 +1,6 @@
-﻿using AetheriaWebService.DataAccess;
+﻿using AetheriaWebService.Controllers;
+using AetheriaWebService.DataAccess;
+using AetheriaWebService.Hubs;
 using AetheriaWebService.Models;
 using System;
 using System.Collections.Generic;
@@ -11,8 +13,10 @@ namespace AetheriaWebService.Helpers
     public class AetheriaHelper
     {
         private AetheriaDataAccess aetheriaDataAccess;
-        public AetheriaHelper(AetheriaDataAccess dataAccess) {
+        private ReplicationHelper _replicationHelper;
+        public AetheriaHelper(AetheriaDataAccess dataAccess, ReplicationHelper replicationHelper) {
             aetheriaDataAccess = dataAccess;
+            _replicationHelper = replicationHelper;
         }
 
         public string ProcessPlayerInput(string input, Player player)
@@ -68,9 +72,21 @@ namespace AetheriaWebService.Helpers
 
         public string Speak(string input, Player player)
         {
+            var words = input.Split(" ").ToList();
+            words.Remove("say");
+            words.Remove("speak");
             //get all players (and maybe one day npcs) in the current cell and send a message to them telling them that this player spoke and what they said
+            var playerStartingPhrase = "You say ";
+            var otherStartingPhrase = player.Name + " says ";
 
-            return "";
+            var message = string.Join(" ", words);
+
+            var chatUsers = aetheriaDataAccess.GetRelevantChatUsersForPlayerAction(player);
+            if(chatUsers.Count > 0)
+            {
+                _replicationHelper.ReplicateToClients(otherStartingPhrase + message, chatUsers);
+            }
+            return playerStartingPhrase + message;
         }
 
         public string Message(string input, Player player)
@@ -105,6 +121,13 @@ namespace AetheriaWebService.Helpers
         {
             //describe the player's current cell
             var cell = aetheriaDataAccess.GetCell(player);
+
+            var chatUsers = aetheriaDataAccess.GetRelevantChatUsersForPlayerAction(player);
+            if (chatUsers.Count > 0)
+            {
+                _replicationHelper.ReplicateToClients(player.Name + " looks around.", chatUsers);
+            }
+
             return cell.Description + " " + cell.EntitiesDescription;
         }
 
@@ -141,7 +164,14 @@ namespace AetheriaWebService.Helpers
             {
                 response += "You move " + direction.ToString() + ".\n";
                 response += newCell.Description + " " + newCell.EntitiesDescription;
-                aetheriaDataAccess.UpdateEntityCell(player, newCell);
+
+                var chatUsers = aetheriaDataAccess.GetRelevantChatUsersForPlayerAction(player);
+                if (chatUsers.Count > 0)
+                {
+                    _replicationHelper.ReplicateToClients(player.Name + " moves " + direction.ToString(), chatUsers);
+                }
+
+                aetheriaDataAccess.UpdateEntityCell(player, newCell);             
             }
             else
             {

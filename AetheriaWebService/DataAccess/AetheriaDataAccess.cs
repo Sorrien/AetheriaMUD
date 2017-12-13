@@ -180,5 +180,33 @@ namespace AetheriaWebService.DataAccess
             db.SaveChanges();
             return cell;
         }
+
+        public List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player)
+        {
+            var players = GetRelevantPlayersForPlayerAction(player);
+            var chatUsers = RelevantChatUsers(players);
+            return chatUsers;
+        }
+
+        public List<Player> GetRelevantPlayersForPlayerAction(Player player)
+        {
+            var playerCell = GetCell(player);
+            var playerCellInventory = db.Inventories.Include(i => i.Entities).FirstOrDefault(x => x.InventoryId == playerCell.InventoryId);
+            var playerEntities = playerCellInventory.Entities.Where(x => x.Type == Entity.EntityType.Player && x.EntityId != player.EntityId);
+            var players = db.Players.Include(p => p.ChatUsers).Where(x => playerEntities.Any(y => y.EntityId == x.EntityId)).ToList();
+            return players;
+        }
+
+        public List<ChatUser> RelevantChatUsers(List<Player> players)
+        {
+            var relevantUsers = new List<ChatUser>();
+
+            foreach(var player in players)
+            {
+                relevantUsers.Add(player.ChatUsers.OrderByDescending(x => x.LastMessageDate).First());
+            }
+            
+            return relevantUsers;
+        }
     }
 }
