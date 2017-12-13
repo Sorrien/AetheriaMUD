@@ -65,7 +65,7 @@ namespace AetheriaWebService.Hubs
         }
 
 
-        public void ReplicateToClients(string message, List<ChatUser> chatUsers)
+        public async void ReplicateToClients(string message, List<ChatUser> chatUsers)
         {
             var relevantChatUsers = new List<ChatUserDTO>();
             foreach (var chatUser in chatUsers)
@@ -84,7 +84,7 @@ namespace AetheriaWebService.Hubs
             };
             var responseMessage = JsonConvert.SerializeObject(serverResponse);
 
-            _messageHubContext.Clients.All.InvokeAsync("Send", responseMessage);
+            await _messageHubContext.Clients.All.InvokeAsync("Send", responseMessage);
         }
     }
 }

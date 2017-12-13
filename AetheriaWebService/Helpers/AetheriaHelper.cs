@@ -73,8 +73,7 @@ namespace AetheriaWebService.Helpers
         public string Speak(string input, Player player)
         {
             var words = input.Split(" ").ToList();
-            words.Remove("say");
-            words.Remove("speak");
+            words.RemoveAt(0);
             //get all players (and maybe one day npcs) in the current cell and send a message to them telling them that this player spoke and what they said
             var playerStartingPhrase = "You say ";
             var otherStartingPhrase = player.Name + " says ";
@@ -120,15 +119,15 @@ namespace AetheriaWebService.Helpers
         public string Look(string input, Player player)
         {
             //describe the player's current cell
-            var cell = aetheriaDataAccess.GetCell(player);
+            var description = aetheriaDataAccess.CellDescriptionForPlayer(player);
 
             var chatUsers = aetheriaDataAccess.GetRelevantChatUsersForPlayerAction(player);
             if (chatUsers.Count > 0)
             {
                 _replicationHelper.ReplicateToClients(player.Name + " looks around.", chatUsers);
             }
-
-            return cell.Description + " " + cell.EntitiesDescription;
+            
+            return description;
         }
 
         public string Move(string input, Player player)
@@ -163,7 +162,7 @@ namespace AetheriaWebService.Helpers
             if(newCell != null)
             {
                 response += "You move " + direction.ToString() + ".\n";
-                response += newCell.Description + " " + newCell.EntitiesDescription;
+                
 
                 var chatUsers = aetheriaDataAccess.GetRelevantChatUsersForPlayerAction(player);
                 if (chatUsers.Count > 0)
@@ -171,7 +170,9 @@ namespace AetheriaWebService.Helpers
                     _replicationHelper.ReplicateToClients(player.Name + " moves " + direction.ToString(), chatUsers);
                 }
 
-                aetheriaDataAccess.UpdateEntityCell(player, newCell);             
+                aetheriaDataAccess.UpdateEntityCell(player, newCell);
+
+                response += aetheriaDataAccess.CellDescriptionForPlayer(player);
             }
             else
             {

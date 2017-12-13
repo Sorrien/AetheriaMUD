@@ -208,5 +208,36 @@ namespace AetheriaWebService.DataAccess
             
             return relevantUsers;
         }
+
+        public string CellDescriptionForPlayer(Player player)
+        {
+            var description = "";
+
+            var cell = GetCell(player);
+
+            description += cell.Description;
+
+            if (cell.Inventory.Entities.Count > 1)
+            {
+                description += " You can also see the following: ";
+                var vowels = new string[5] { "a", "e", "i", "o", "u" };
+                var descriptionItems = new List<string>();
+                foreach (var entity in cell.Inventory.Entities)
+                {
+                    var startsWithVowel = vowels.Contains(entity.Name.Split()[0]);
+                    if (entity.Type == Entity.EntityType.Player)
+                    {
+                        description += " " + entity.Name + ", ";
+                    }
+                    else
+                    {
+                        description += (startsWithVowel ? "an" : "a") + " " + entity.Name + ", ";
+                    }
+                }
+                description = description.Substring(0, description.Length - 2);
+            }
+
+            return description;
+        }
     }
 }

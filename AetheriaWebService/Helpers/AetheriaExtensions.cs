@@ -21,7 +21,7 @@ namespace AetheriaWebService.Helpers
 
                     //int x = 0;
                     //int y = 0;
-                    string description = "a tile of grassy world stretches out before you";
+                    string description = "Rolling grassy hills stretch out as far as you can see.";
                     var entities = new List<Entity>();
                     int z = 0;
                     for(int i=0;i<3;i++)
@@ -35,7 +35,7 @@ namespace AetheriaWebService.Helpers
 
                 if (!context.Players.Any())
                 {
-                    var player = aetheriaDataAccess.CreateNewPlayer("Sorrien", "slack", "csparks", "U6G34P0S1");
+                    var player = aetheriaDataAccess.CreateNewPlayer("Sorrien", "slack", "collinsparks", "U6G34P0S1");
                     var player2 = aetheriaDataAccess.CreateNewPlayer("Mavrick", "slack", "connor", "U6P6XEATG");
                     var startingCell = context.Cells.FirstOrDefault(x => x.X == 0 && x.Y == 0 && x.Z == 0);
                     aetheriaDataAccess.UpdateEntityCell(player, startingCell);
