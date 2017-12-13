@@ -21,6 +21,8 @@ namespace AetheriaWebService.Helpers
             Lock = 90,
             Unlock = 100,
             Consume = 110,
+            Drop = 120,
+            Inventory = 130,
         }
         public static CommandEnum MapCommand(string input)
         {
@@ -75,6 +77,12 @@ namespace AetheriaWebService.Helpers
                 case "drink":
                 case "quaff":
                     command = CommandEnum.Consume;
+                    break;
+                case "drop":
+                    command = CommandEnum.Drop;
+                    break;
+                case "inventory":
+                    command = CommandEnum.Inventory;
                     break;
             }
 

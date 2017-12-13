@@ -17,7 +17,8 @@ namespace AetheriaWebService.DataAccess
         }
         public Player GetPlayer(string chatUserId, string platform)
         {
-            var player = db.Players.Include(c => c.ChatUsers).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
+            var player = db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
+            player.Inventory = db.Inventories.Include(x => x.Entities).FirstOrDefault(x => x.InventoryId == player.Inventory.InventoryId);
             return player;
         }
         public Cell GetCell(Entity entity)
@@ -66,6 +67,14 @@ namespace AetheriaWebService.DataAccess
 
             return resultCell;
         }
+        public void UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity)
+        {
+            old.Entities.Remove(entity);
+            newInventory.Entities.Add(entity);
+            db.Update(old);
+            db.Update(newInventory);
+            db.SaveChanges();
+        }
         public void UpdateEntityCell(Entity entity, Cell newCell)
         {
             var oldCell = GetCell(entity);
@@ -112,6 +121,13 @@ namespace AetheriaWebService.DataAccess
                 BaseDamageValue = 1,
                 Effects = new List<Effect>(),
             };
+            var goldbar = new Entity
+            {
+                EntityId = Guid.NewGuid(),
+                Type = Entity.EntityType.Item,
+                Name = "gold bar",
+                Description = "an ingot of gold, quite valuable."
+            };
             var characterStats = new CharacterStats
             {
                 CharacterStatsId = Guid.NewGuid(),
@@ -134,6 +150,8 @@ namespace AetheriaWebService.DataAccess
                 EquippedWeapon = dagger,
                 Inventory = inventory
             };
+            inventory.Entities.Add(goldbar);
+            db.Entities.Add(goldbar);
             db.Players.Add(player);
             db.Weapons.Add(dagger);
             db.Inventories.Add(inventory);
@@ -201,11 +219,11 @@ namespace AetheriaWebService.DataAccess
         {
             var relevantUsers = new List<ChatUser>();
 
-            foreach(var player in players)
+            foreach (var player in players)
             {
                 relevantUsers.Add(player.ChatUsers.OrderByDescending(x => x.LastMessageDate).First());
             }
-            
+
             return relevantUsers;
         }
 
