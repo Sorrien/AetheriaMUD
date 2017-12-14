@@ -1,20 +1,20 @@
-﻿using AetheriaWebService.Controllers;
-using AetheriaWebService.DataAccess;
-using AetheriaWebService.Hubs;
+﻿using AetheriaWebService.DataAccess;
 using AetheriaWebService.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using static AetheriaWebService.Models.Cell;
 
 namespace AetheriaWebService.Helpers
 {
-    public class AetheriaHelper
+    public interface IAetheriaHelper
     {
-        private readonly AetheriaDataAccess aetheriaDataAccess;
-        private readonly ReplicationHelper _replicationHelper;
-        public AetheriaHelper(AetheriaDataAccess dataAccess, ReplicationHelper replicationHelper)
+        string ProcessPlayerInput(string input, string chatUserId, string platform);
+    }
+    public class AetheriaHelper : IAetheriaHelper
+    {
+        private readonly IAetheriaDataAccess aetheriaDataAccess;
+        private readonly IReplicationHelper _replicationHelper;
+        public AetheriaHelper(IAetheriaDataAccess dataAccess, IReplicationHelper replicationHelper)
         {
             aetheriaDataAccess = dataAccess;
             _replicationHelper = replicationHelper;

@@ -13,15 +13,15 @@ namespace AetheriaWebService.Hubs
 {
     public class AetheriaHub : Hub
     {
-        private readonly AetheriaHelper _aetheriaHelper;
-        public AetheriaHub(AetheriaHelper aetheriaHelper)
+        private readonly IAetheriaHelper _aetheriaHelper;
+        public AetheriaHub(IAetheriaHelper aetheriaHelper)
         {
             _aetheriaHelper = aetheriaHelper;
         }
         public Task Send(string message)
         {
             var clientMessage = JsonConvert.DeserializeObject<AetheriaClientMessage>(message);
-            
+
             var response = _aetheriaHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.Platform);
             var relevantChatUsers = new List<ChatUserDTO>();
             relevantChatUsers.Add(new ChatUserDTO
@@ -42,39 +42,6 @@ namespace AetheriaWebService.Hubs
         public Task ServerSend(string message)
         {
             return Clients.All.InvokeAsync("ServerSend", message);
-        }
-    }
-
-    public class ReplicationHelper
-    {
-        private readonly IHubContext<AetheriaHub> _messageHubContext;
-
-        public ReplicationHelper(IHubContext<AetheriaHub> messageHubContext)
-        {
-            _messageHubContext = messageHubContext;
-        }
-
-
-        public async void ReplicateToClients(string message, List<ChatUser> chatUsers)
-        {
-            var relevantChatUsers = new List<ChatUserDTO>();
-            foreach (var chatUser in chatUsers)
-            {
-                relevantChatUsers.Add(new ChatUserDTO
-                {
-                    ChatUserId = chatUser.UserId,
-                    Platform = chatUser.Platform
-                });
-            }
-            var serverResponse = new AetheriaServerResponse
-            {
-                ServerAuthToken = "TestToken",
-                RelevantChatUsers = relevantChatUsers,
-                Response = message
-            };
-            var responseMessage = JsonConvert.SerializeObject(serverResponse);
-
-            await _messageHubContext.Clients.All.InvokeAsync("Send", responseMessage);
         }
     }
 }

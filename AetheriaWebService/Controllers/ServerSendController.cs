@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using AetheriaWebService.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using AetheriaWebService.Models;
+using AetheriaWebService.Helpers;
 
 namespace AetheriaWebService.Controllers
 {

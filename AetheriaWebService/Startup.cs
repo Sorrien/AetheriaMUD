@@ -36,24 +36,9 @@ namespace AetheriaWebService
             services.AddMvc();
 
 
-            services.AddTransient<ReplicationHelper>((ctx) =>
-            {
-                var hubContextService = ctx.GetRequiredService<IHubContext<AetheriaHub>>();
-                return new ReplicationHelper(hubContextService);
-            });
-
-            services.AddTransient<AetheriaDataAccess>((ctx) =>
-            {
-                var dbService = ctx.GetRequiredService<AetheriaContext>();
-                return new AetheriaDataAccess(dbService);
-            });
-
-            services.AddTransient<AetheriaHelper>((ctx) =>
-            {
-                var aetheriaDataAccessService = ctx.GetRequiredService<AetheriaDataAccess>();
-                var replicationService = ctx.GetRequiredService<ReplicationHelper>();
-                return new AetheriaHelper(aetheriaDataAccessService, replicationService);
-            });
+            services.AddScoped<IReplicationHelper, ReplicationHelper>();
+            services.AddScoped<IAetheriaDataAccess, AetheriaDataAccess>();
+            services.AddScoped<IAetheriaHelper, AetheriaHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

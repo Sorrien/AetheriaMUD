@@ -26,6 +26,7 @@ namespace AetheriaWebService.Helpers
         }
         public static CommandEnum MapCommand(string input)
         {
+            //maybe this should also return the keyword it found?
             var command = CommandEnum.None;
 
             string actionWord = input.ToLower().Split(" ")[0];

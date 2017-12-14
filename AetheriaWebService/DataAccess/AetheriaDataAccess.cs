@@ -8,7 +8,20 @@ using static AetheriaWebService.Models.Cell;
 
 namespace AetheriaWebService.DataAccess
 {
-    public class AetheriaDataAccess
+    public interface IAetheriaDataAccess
+    {
+        Player GetPlayer(string chatUserId, string platform);
+        Cell GetCell(Entity entity);
+        Cell GetCellRelativeToCell(Cell cell, DirectionEnum direction);
+        void UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity);
+        void UpdateEntityCell(Entity entity, Cell newCell);
+        Player CreateNewPlayer(string PlayerName, string Platform, string ChatUsername, string ChatUserId);
+        World CreateNewWorld(string Name);
+        Cell CreateNewCell(World World, int X, int Y, int Z, string Description, List<Entity> Entities);
+        List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player);
+        string CellDescriptionForPlayer(Player player);
+    }
+    public class AetheriaDataAccess : IAetheriaDataAccess
     {
         private readonly AetheriaContext db;
         public AetheriaDataAccess(AetheriaContext context)
@@ -23,16 +36,6 @@ namespace AetheriaWebService.DataAccess
         }
         public Cell GetCell(Entity entity)
         {
-            //Cell result = null;
-            
-            //foreach (var cell in db.Cells)
-            //{
-            //    var inventory = db.Inventories.Include(e => e.Entities).FirstOrDefault(x => x.InventoryId == cell.InventoryId);
-            //    if (inventory.Entities != null && inventory.Entities.Any(x => x.EntityId == entity.EntityId))
-            //    {
-            //        result = cell;
-            //    }
-            //}
             var cell = db.Cells.Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefault(x => x.Inventory.Entities.Any(y => y == entity));
             return cell;
         }
@@ -208,30 +211,6 @@ namespace AetheriaWebService.DataAccess
             var chatUsers = db.ChatUsers.Where(x => playerEntities.Any(y => y.EntityId == x.PlayerEntityId)).ToList();
             return chatUsers;
         }
-
-        //public List<Player> GetRelevantPlayersForPlayerAction(Player player)
-        //{
-            
-        //    //var players = db.Players.Include(p => p.ChatUsers).Where(x => playerEntities.Any(y => y.EntityId == x.EntityId)).ToList();
-        //    //var players = new List<Player>();
-        //    //foreach(var entity in playerEntities)
-        //    //{
-
-        //    //}
-        //    return players;
-        //}
-
-        //public List<ChatUser> RelevantChatUsers(List<Player> players)
-        //{
-        //    var relevantUsers = new List<ChatUser>();
-
-        //    foreach (var player in players)
-        //    {
-        //        relevantUsers.Add(player.ChatUsers.OrderByDescending(x => x.LastMessageDate).First());
-        //    }
-
-        //    return relevantUsers;
-        //}
 
         public string CellDescriptionForPlayer(Player player)
         {
