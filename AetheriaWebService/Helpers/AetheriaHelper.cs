@@ -227,11 +227,38 @@ namespace AetheriaWebService.Helpers
             {
                 response += "You move " + direction.ToString() + ".\n";
 
-                Replicate(player.Name + " moves " + direction.ToString(), player);
+                Replicate(player.Name + " moves " + direction, player);
 
                 aetheriaDataAccess.UpdateEntityCell(player, newCell);
 
-                Replicate(player.Name + " arrives from the " + direction, player);
+                var oppDirectionString = "";
+
+                switch (direction)
+                {
+                    case DirectionEnum.North:
+                        oppDirectionString = "the South";
+                        break;
+                    case DirectionEnum.South:
+                        oppDirectionString = "the North";
+                        break;
+                    case DirectionEnum.West:
+                        oppDirectionString = "the East";
+                        break;
+                    case DirectionEnum.East:
+                        oppDirectionString = "the West";
+                        break;
+                    case DirectionEnum.Up:
+                        oppDirectionString = "above";
+                        break;
+                    case DirectionEnum.Down:
+                        oppDirectionString = "below";
+                        break;
+                    default:
+                        oppDirectionString = "somewhere";
+                        break;
+                }
+
+                Replicate(player.Name + " arrives from " + oppDirectionString, player);
 
                 response += aetheriaDataAccess.CellDescriptionForPlayer(player);
             }

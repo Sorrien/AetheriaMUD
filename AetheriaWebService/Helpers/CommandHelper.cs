@@ -56,7 +56,6 @@ namespace AetheriaWebService.Helpers
                 case "look":
                     command = CommandEnum.Look;
                     break;
-                case "move":
                 case "north":
                 case "south":
                 case "west":

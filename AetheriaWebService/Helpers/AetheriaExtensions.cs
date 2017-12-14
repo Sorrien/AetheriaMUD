@@ -37,9 +37,11 @@ namespace AetheriaWebService.Helpers
                 {
                     var player = aetheriaDataAccess.CreateNewPlayer("Sorrien", "slack", "collinsparks", "U6G34P0S1");
                     var player2 = aetheriaDataAccess.CreateNewPlayer("Mavrick", "slack", "connor", "U6P6XEATG");
+                    var player3 = aetheriaDataAccess.CreateNewPlayer("Pasha", "slack", "pasha", "U7DDTDB7F");
                     var startingCell = context.Cells.FirstOrDefault(x => x.X == 0 && x.Y == 0 && x.Z == 0);
                     aetheriaDataAccess.UpdateEntityCell(player, startingCell);
                     aetheriaDataAccess.UpdateEntityCell(player2, startingCell);
+                    aetheriaDataAccess.UpdateEntityCell(player3, startingCell);
                 }
             }
         }

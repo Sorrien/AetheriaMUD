@@ -23,17 +23,18 @@ namespace AetheriaWebService.DataAccess
         }
         public Cell GetCell(Entity entity)
         {
-            Cell result = null;
-            foreach (var cell in db.Cells)
-            {
-                var inventory = db.Inventories.Include(e => e.Entities).FirstOrDefault(x => x.InventoryId == cell.InventoryId);
-                if (inventory.Entities != null && inventory.Entities.Any(x => x.EntityId == entity.EntityId))
-                {
-                    result = cell;
-                }
-            }
-            //var cell = db.Cells.FirstOrDefault(x => x.Inventory.Entities.Any(y => y == entity));
-            return result;
+            //Cell result = null;
+            
+            //foreach (var cell in db.Cells)
+            //{
+            //    var inventory = db.Inventories.Include(e => e.Entities).FirstOrDefault(x => x.InventoryId == cell.InventoryId);
+            //    if (inventory.Entities != null && inventory.Entities.Any(x => x.EntityId == entity.EntityId))
+            //    {
+            //        result = cell;
+            //    }
+            //}
+            var cell = db.Cells.Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefault(x => x.Inventory.Entities.Any(y => y == entity));
+            return cell;
         }
         public Cell GetCellRelativeToCell(Cell cell, DirectionEnum direction)
         {
@@ -201,31 +202,36 @@ namespace AetheriaWebService.DataAccess
 
         public List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player)
         {
-            var players = GetRelevantPlayersForPlayerAction(player);
-            var chatUsers = RelevantChatUsers(players);
-            return chatUsers;
-        }
-
-        public List<Player> GetRelevantPlayersForPlayerAction(Player player)
-        {
             var playerCell = GetCell(player);
             var playerCellInventory = db.Inventories.Include(i => i.Entities).FirstOrDefault(x => x.InventoryId == playerCell.InventoryId);
             var playerEntities = playerCellInventory.Entities.Where(x => x.Type == Entity.EntityType.Player && x.EntityId != player.EntityId);
-            var players = db.Players.Include(p => p.ChatUsers).Where(x => playerEntities.Any(y => y.EntityId == x.EntityId)).ToList();
-            return players;
+            var chatUsers = db.ChatUsers.Where(x => playerEntities.Any(y => y.EntityId == x.PlayerEntityId)).ToList();
+            return chatUsers;
         }
 
-        public List<ChatUser> RelevantChatUsers(List<Player> players)
-        {
-            var relevantUsers = new List<ChatUser>();
+        //public List<Player> GetRelevantPlayersForPlayerAction(Player player)
+        //{
+            
+        //    //var players = db.Players.Include(p => p.ChatUsers).Where(x => playerEntities.Any(y => y.EntityId == x.EntityId)).ToList();
+        //    //var players = new List<Player>();
+        //    //foreach(var entity in playerEntities)
+        //    //{
 
-            foreach (var player in players)
-            {
-                relevantUsers.Add(player.ChatUsers.OrderByDescending(x => x.LastMessageDate).First());
-            }
+        //    //}
+        //    return players;
+        //}
 
-            return relevantUsers;
-        }
+        //public List<ChatUser> RelevantChatUsers(List<Player> players)
+        //{
+        //    var relevantUsers = new List<ChatUser>();
+
+        //    foreach (var player in players)
+        //    {
+        //        relevantUsers.Add(player.ChatUsers.OrderByDescending(x => x.LastMessageDate).First());
+        //    }
+
+        //    return relevantUsers;
+        //}
 
         public string CellDescriptionForPlayer(Player player)
         {
@@ -240,7 +246,7 @@ namespace AetheriaWebService.DataAccess
                 description += " You can also see the following: ";
                 var vowels = new string[5] { "a", "e", "i", "o", "u" };
                 var descriptionItems = new List<string>();
-                foreach (var entity in cell.Inventory.Entities)
+                foreach (var entity in cell.Inventory.Entities.Where(x => x.EntityId != player.EntityId))
                 {
                     var startsWithVowel = vowels.Contains(entity.Name.Split()[0]);
                     if (entity.Type == Entity.EntityType.Player)
