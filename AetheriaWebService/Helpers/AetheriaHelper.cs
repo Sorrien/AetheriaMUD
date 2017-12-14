@@ -12,16 +12,18 @@ namespace AetheriaWebService.Helpers
 {
     public class AetheriaHelper
     {
-        private AetheriaDataAccess aetheriaDataAccess;
-        private ReplicationHelper _replicationHelper;
+        private readonly AetheriaDataAccess aetheriaDataAccess;
+        private readonly ReplicationHelper _replicationHelper;
         public AetheriaHelper(AetheriaDataAccess dataAccess, ReplicationHelper replicationHelper)
         {
             aetheriaDataAccess = dataAccess;
             _replicationHelper = replicationHelper;
         }
 
-        public string ProcessPlayerInput(string input, Player player)
+        public string ProcessPlayerInput(string input, string chatUserId, string platform)
         {
+            var player = aetheriaDataAccess.GetPlayer(chatUserId, platform);
+
             string response = "";
 
             var command = CommandHelper.MapCommand(input);

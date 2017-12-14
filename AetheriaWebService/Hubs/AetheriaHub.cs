@@ -13,26 +13,16 @@ namespace AetheriaWebService.Hubs
 {
     public class AetheriaHub : Hub
     {
-        private AetheriaContext db;
-        // private ReplicationHelper _replicationHelper;
-        private IHubContext<AetheriaHub> _messageHubContext;
-        public AetheriaHub(AetheriaContext context,
-            //ReplicationHelper replicationHelper
-            IHubContext<AetheriaHub> messageHubContext
-            )
+        private readonly AetheriaHelper _aetheriaHelper;
+        public AetheriaHub(AetheriaHelper aetheriaHelper)
         {
-            db = context;
-            _messageHubContext = messageHubContext;
-            //_replicationHelper = replicationHelper;
+            _aetheriaHelper = aetheriaHelper;
         }
         public Task Send(string message)
         {
             var clientMessage = JsonConvert.DeserializeObject<AetheriaClientMessage>(message);
-            var replicationHelper = new ReplicationHelper(_messageHubContext);
-            var aetheriaDataAccess = new AetheriaDataAccess(db);
-            var aetheriaHelper = new AetheriaHelper(aetheriaDataAccess, replicationHelper);
-            var player = aetheriaDataAccess.GetPlayer(clientMessage.ChatUserId, clientMessage.Platform);
-            var response = aetheriaHelper.ProcessPlayerInput(clientMessage.Message, player);
+            
+            var response = _aetheriaHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.Platform);
             var relevantChatUsers = new List<ChatUserDTO>();
             relevantChatUsers.Add(new ChatUserDTO
             {
@@ -57,7 +47,7 @@ namespace AetheriaWebService.Hubs
 
     public class ReplicationHelper
     {
-        private IHubContext<AetheriaHub> _messageHubContext;
+        private readonly IHubContext<AetheriaHub> _messageHubContext;
 
         public ReplicationHelper(IHubContext<AetheriaHub> messageHubContext)
         {

@@ -10,15 +10,15 @@ namespace AetheriaWebService.DataAccess
 {
     public class AetheriaDataAccess
     {
-        private AetheriaContext db;
+        private readonly AetheriaContext db;
         public AetheriaDataAccess(AetheriaContext context)
         {
             db = context;
         }
         public Player GetPlayer(string chatUserId, string platform)
         {
-            var player = db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
-            player.Inventory = db.Inventories.Include(x => x.Entities).FirstOrDefault(x => x.InventoryId == player.Inventory.InventoryId);
+            var player = db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
+            //player.Inventory = db.Inventories.Include(x => x.Entities).FirstOrDefault(x => x.InventoryId == player.Inventory.InventoryId);
             return player;
         }
         public Cell GetCell(Entity entity)

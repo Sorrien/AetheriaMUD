@@ -11,6 +11,8 @@ using AetheriaWebService.Models;
 using Microsoft.EntityFrameworkCore;
 using AetheriaWebService.Helpers;
 using AetheriaWebService.Hubs;
+using AetheriaWebService.DataAccess;
+using Microsoft.AspNetCore.SignalR;
 
 namespace AetheriaWebService
 {
@@ -32,6 +34,26 @@ namespace AetheriaWebService
             services.AddSignalR();
             // Add framework services.
             services.AddMvc();
+
+
+            services.AddTransient<ReplicationHelper>((ctx) =>
+            {
+                var hubContextService = ctx.GetRequiredService<IHubContext<AetheriaHub>>();
+                return new ReplicationHelper(hubContextService);
+            });
+
+            services.AddTransient<AetheriaDataAccess>((ctx) =>
+            {
+                var dbService = ctx.GetRequiredService<AetheriaContext>();
+                return new AetheriaDataAccess(dbService);
+            });
+
+            services.AddTransient<AetheriaHelper>((ctx) =>
+            {
+                var aetheriaDataAccessService = ctx.GetRequiredService<AetheriaDataAccess>();
+                var replicationService = ctx.GetRequiredService<ReplicationHelper>();
+                return new AetheriaHelper(aetheriaDataAccessService, replicationService);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
