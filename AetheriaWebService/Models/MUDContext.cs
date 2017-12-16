@@ -4,19 +4,14 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using System.Text;
 
-namespace AetheriaWebService.Models
+namespace MUDService.Models
 {
-    public class AetheriaContext : DbContext
+    public class MUDContext : DbContext
     {
-        public AetheriaContext(DbContextOptions options) : base(options)
+        public MUDContext(DbContextOptions options) : base(options)
         {
 
         }
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS;Database=AetheriaContext;Trusted_Connection=True;");
-        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

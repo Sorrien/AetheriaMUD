@@ -1,6 +1,6 @@
-﻿using AetheriaWebService.Hubs;
-using AetheriaWebService.Models;
-using AetheriaWebService.ServiceModels;
+﻿using MUDService.Hubs;
+using MUDService.Models;
+using MUDService.ServiceModels;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AetheriaWebService.Helpers
+namespace MUDService.Helpers
 {
     public interface IReplicationHelper
     {
@@ -16,9 +16,9 @@ namespace AetheriaWebService.Helpers
     }
     public class ReplicationHelper : IReplicationHelper
     {
-        private readonly IHubContext<AetheriaHub> _messageHubContext;
+        private readonly IHubContext<MUDHub> _messageHubContext;
 
-        public ReplicationHelper(IHubContext<AetheriaHub> messageHubContext)
+        public ReplicationHelper(IHubContext<MUDHub> messageHubContext)
         {
             _messageHubContext = messageHubContext;
         }
@@ -34,7 +34,7 @@ namespace AetheriaWebService.Helpers
                     Platform = chatUser.Platform
                 });
             }
-            var serverResponse = new AetheriaServerResponse
+            var serverResponse = new MUDServerResponse
             {
                 ServerAuthToken = "TestToken",
                 RelevantChatUsers = relevantChatUsers,

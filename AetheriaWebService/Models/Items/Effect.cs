@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static AetheriaWebService.Models.CharacterStats;
+using static MUDService.Models.CharacterStats;
 
-namespace AetheriaWebService.Models
+namespace MUDService.Models
 {
     public class Effect
     {

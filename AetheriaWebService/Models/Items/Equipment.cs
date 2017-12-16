@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static AetheriaWebService.Models.Weapon;
+using static MUDService.Models.Weapon;
 
-namespace AetheriaWebService.Models
+namespace MUDService.Models
 {
     public class Equipment : Item
     {

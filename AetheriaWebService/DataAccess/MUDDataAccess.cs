@@ -1,14 +1,14 @@
-﻿using AetheriaWebService.Models;
+﻿using MUDService.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static AetheriaWebService.Models.Cell;
+using static MUDService.Models.Cell;
 
-namespace AetheriaWebService.DataAccess
+namespace MUDService.DataAccess
 {
-    public interface IAetheriaDataAccess
+    public interface IMUDDataAccess
     {
         Player GetPlayer(string chatUserId, string platform);
         Cell GetCell(Entity entity);
@@ -21,10 +21,10 @@ namespace AetheriaWebService.DataAccess
         List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player);
         string CellDescriptionForPlayer(Player player);
     }
-    public class AetheriaDataAccess : IAetheriaDataAccess
+    public class MUDDataAccess : IMUDDataAccess
     {
-        private readonly AetheriaContext db;
-        public AetheriaDataAccess(AetheriaContext context)
+        private readonly MUDContext db;
+        public MUDDataAccess(MUDContext context)
         {
             db = context;
         }

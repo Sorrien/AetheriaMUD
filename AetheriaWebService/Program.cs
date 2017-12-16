@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using AetheriaWebService.Models;
+using MUDService.Models;
 using Microsoft.EntityFrameworkCore;
-using AetheriaWebService.Helpers;
+using MUDService.Helpers;
 
-namespace AetheriaWebService
+namespace MUDService
 {
     public class Program
     {
@@ -27,8 +27,8 @@ namespace AetheriaWebService
                 try
                 {
                     // Requires using RazorPagesMovie.Models;
-                    scope.ServiceProvider.GetService<AetheriaContext>().Database.Migrate();
-                    scope.ServiceProvider.GetService<AetheriaContext>().EnsureSeedData();
+                    scope.ServiceProvider.GetService<MUDContext>().Database.Migrate();
+                    scope.ServiceProvider.GetService<MUDContext>().EnsureSeedData();
                     
                 }
                 catch (Exception ex)

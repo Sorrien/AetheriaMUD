@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using AetheriaWebService.Models;
+using MUDService.Models;
 using Microsoft.EntityFrameworkCore;
-using AetheriaWebService.Helpers;
-using AetheriaWebService.Hubs;
-using AetheriaWebService.DataAccess;
+using MUDService.Helpers;
+using MUDService.Hubs;
+using MUDService.DataAccess;
 using Microsoft.AspNetCore.SignalR;
 
-namespace AetheriaWebService
+namespace MUDService
 {
     public class Startup
     {
@@ -28,8 +28,8 @@ namespace AetheriaWebService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContextPool<AetheriaContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("AetheriaContext")));
+            services.AddDbContextPool<MUDContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("MUDContext")));
 
             services.AddSignalR();
             // Add framework services.
@@ -37,8 +37,8 @@ namespace AetheriaWebService
 
 
             services.AddScoped<IReplicationHelper, ReplicationHelper>();
-            services.AddScoped<IAetheriaDataAccess, AetheriaDataAccess>();
-            services.AddScoped<IAetheriaHelper, AetheriaHelper>();
+            services.AddScoped<IMUDDataAccess, MUDDataAccess>();
+            services.AddScoped<IMUDHelper, MUDHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,7 +54,7 @@ namespace AetheriaWebService
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<AetheriaHub>("AetheriaHub");
+                routes.MapHub<MUDHub>("MUDHub");
             });
 
             app.UseMvc();

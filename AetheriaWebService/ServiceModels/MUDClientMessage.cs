@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AetheriaWebService.ServiceModels
+namespace MUDService.ServiceModels
 {
-    public class AetheriaClientMessage
+    public class MUDClientMessage
     {
         public string ClientId { get; set; }
         public string Platform { get; set; }

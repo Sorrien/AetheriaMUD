@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using AetheriaWebService.Hubs;
+using MUDService.Hubs;
 using Microsoft.AspNetCore.SignalR;
-using AetheriaWebService.Models;
-using AetheriaWebService.Helpers;
+using MUDService.Models;
+using MUDService.Helpers;
 
-namespace AetheriaWebService.Controllers
+namespace MUDService.Controllers
 {
     [Produces("application/json")]
     [Route("api/ServerSend")]
     public class ServerSendController : Controller
     {
-        private IHubContext<AetheriaHub> _messageHubContext;
+        private IHubContext<MUDHub> _messageHubContext;
 
-        public ServerSendController(IHubContext<AetheriaHub> messageHubContext)
+        public ServerSendController(IHubContext<MUDHub> messageHubContext)
         {
             _messageHubContext = messageHubContext;
         }

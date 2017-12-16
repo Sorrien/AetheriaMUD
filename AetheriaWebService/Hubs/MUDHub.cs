@@ -1,7 +1,7 @@
-﻿using AetheriaWebService.DataAccess;
-using AetheriaWebService.Helpers;
-using AetheriaWebService.Models;
-using AetheriaWebService.ServiceModels;
+﻿using MUDService.DataAccess;
+using MUDService.Helpers;
+using MUDService.Models;
+using MUDService.ServiceModels;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System;
@@ -9,20 +9,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AetheriaWebService.Hubs
+namespace MUDService.Hubs
 {
-    public class AetheriaHub : Hub
+    public class MUDHub : Hub
     {
-        private readonly IAetheriaHelper _aetheriaHelper;
-        public AetheriaHub(IAetheriaHelper aetheriaHelper)
+        private readonly IMUDHelper _mudHelper;
+        public MUDHub(IMUDHelper mudHelper)
         {
-            _aetheriaHelper = aetheriaHelper;
+            _mudHelper = mudHelper;
         }
         public Task Send(string message)
         {
-            var clientMessage = JsonConvert.DeserializeObject<AetheriaClientMessage>(message);
+            var clientMessage = JsonConvert.DeserializeObject<MUDClientMessage>(message);
 
-            var response = _aetheriaHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.ChatUsername, clientMessage.Platform);
+            var response = _mudHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.ChatUsername, clientMessage.Platform);
             if (response != "")
             {
                 var relevantChatUsers = new List<ChatUserDTO>();
@@ -31,7 +31,7 @@ namespace AetheriaWebService.Hubs
                     ChatUserId = clientMessage.ChatUserId,
                     Platform = clientMessage.Platform
                 });
-                var serverResponse = new AetheriaServerResponse
+                var serverResponse = new MUDServerResponse
                 {
                     ServerAuthToken = "TestToken",
                     RelevantChatUsers = relevantChatUsers,

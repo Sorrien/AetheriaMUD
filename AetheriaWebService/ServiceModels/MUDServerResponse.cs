@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AetheriaWebService.ServiceModels
+namespace MUDService.ServiceModels
 {
-    public class AetheriaServerResponse
+    public class MUDServerResponse
     {
         public string ServerAuthToken { get; set; }
         public List<ChatUserDTO> RelevantChatUsers { get; set; }

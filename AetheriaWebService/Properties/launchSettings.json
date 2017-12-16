@@ -16,7 +16,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "AetheriaWebService": {
+    "MUDService": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/values",

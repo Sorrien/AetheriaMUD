@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AetheriaWebService.Migrations
+namespace MUDService.Migrations
 {
     public partial class Initial : Migration
     {
@@ -139,7 +139,7 @@ namespace AetheriaWebService.Migrations
                     ChatUserId = table.Column<Guid>(nullable: false),
                     LastMessageDate = table.Column<DateTime>(nullable: false),
                     Platform = table.Column<string>(nullable: true),
-                    PlayerEntityId = table.Column<Guid>(nullable: true),
+                    PlayerEntityId = table.Column<Guid>(nullable: false),
                     UserId = table.Column<string>(nullable: true),
                     Username = table.Column<string>(nullable: true)
                 },
@@ -151,7 +151,7 @@ namespace AetheriaWebService.Migrations
                         column: x => x.PlayerEntityId,
                         principalTable: "Entities",
                         principalColumn: "EntityId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

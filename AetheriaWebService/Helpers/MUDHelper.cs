@@ -1,28 +1,28 @@
-﻿using AetheriaWebService.DataAccess;
-using AetheriaWebService.Models;
+﻿using MUDService.DataAccess;
+using MUDService.Models;
 using System.Collections.Generic;
 using System.Linq;
-using static AetheriaWebService.Models.Cell;
+using static MUDService.Models.Cell;
 
-namespace AetheriaWebService.Helpers
+namespace MUDService.Helpers
 {
-    public interface IAetheriaHelper
+    public interface IMUDHelper
     {
         string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform);
     }
-    public class AetheriaHelper : IAetheriaHelper
+    public class MUDHelper : IMUDHelper
     {
-        private readonly IAetheriaDataAccess aetheriaDataAccess;
+        private readonly IMUDDataAccess mudDataAccess;
         private readonly IReplicationHelper _replicationHelper;
-        public AetheriaHelper(IAetheriaDataAccess dataAccess, IReplicationHelper replicationHelper)
+        public MUDHelper(IMUDDataAccess dataAccess, IReplicationHelper replicationHelper)
         {
-            aetheriaDataAccess = dataAccess;
+            mudDataAccess = dataAccess;
             _replicationHelper = replicationHelper;
         }
 
         public string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform)
         {
-            var player = aetheriaDataAccess.GetPlayer(chatUserId, platform);
+            var player = mudDataAccess.GetPlayer(chatUserId, platform);
             string response = "";
 
 
@@ -78,7 +78,7 @@ namespace AetheriaWebService.Helpers
 
         public string Login(string input, string chatUserId, string chatUsername, string platform, Player player)
         {
-            //take the player's aetheria login data and add their current username to the whitelist of users for that player
+            //take the player's MUD login data and add their current username to the whitelist of users for that player
 
             var response = "";
             if (player == null)
@@ -100,7 +100,7 @@ namespace AetheriaWebService.Helpers
                     characterName = words[0];
                 }
 
-                var newPlayer = aetheriaDataAccess.CreateNewPlayer(characterName, platform, chatUsername, chatUserId);
+                var newPlayer = mudDataAccess.CreateNewPlayer(characterName, platform, chatUsername, chatUserId);
                 response = "Created Player " + newPlayer.Name + " for user " + chatUsername;
             }
             else
@@ -154,12 +154,12 @@ namespace AetheriaWebService.Helpers
             words.RemoveAt(0);
             var itemName = string.Join(" ", words);
 
-            var cell = aetheriaDataAccess.GetCell(player);
+            var cell = mudDataAccess.GetCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
-                aetheriaDataAccess.UpdateEntityInventory(cell.Inventory, player.Inventory, item);
+                mudDataAccess.UpdateEntityInventory(cell.Inventory, player.Inventory, item);
                 var playerStartingPhrase = "You pickup ";
                 var otherStartingPhrase = player.Name + " picks up a ";
 
@@ -181,12 +181,12 @@ namespace AetheriaWebService.Helpers
             words.RemoveAt(0);
             var itemName = string.Join(" ", words);
 
-            var cell = aetheriaDataAccess.GetCell(player);
+            var cell = mudDataAccess.GetCell(player);
             var item = player.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
-                aetheriaDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
+                mudDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
                 var playerStartingPhrase = "You drop ";
                 var otherStartingPhrase = player.Name + " drops a ";
 
@@ -218,7 +218,7 @@ namespace AetheriaWebService.Helpers
         public string Look(string input, Player player)
         {
             //describe the player's current cell
-            var description = aetheriaDataAccess.CellDescriptionForPlayer(player);
+            var description = mudDataAccess.CellDescriptionForPlayer(player);
 
             Replicate(player.Name + " looks around.", player);
 
@@ -252,15 +252,15 @@ namespace AetheriaWebService.Helpers
                     direction = DirectionEnum.Down;
                     break;
             }
-            var currentCell = aetheriaDataAccess.GetCell(player);
-            var newCell = aetheriaDataAccess.GetCellRelativeToCell(currentCell, direction);
+            var currentCell = mudDataAccess.GetCell(player);
+            var newCell = mudDataAccess.GetCellRelativeToCell(currentCell, direction);
             if (newCell != null)
             {
                 response += "You move " + direction.ToString() + ".\n";
 
                 Replicate(player.Name + " moves " + direction, player);
 
-                aetheriaDataAccess.UpdateEntityCell(player, newCell);
+                mudDataAccess.UpdateEntityCell(player, newCell);
 
                 var oppDirectionString = "";
 
@@ -291,7 +291,7 @@ namespace AetheriaWebService.Helpers
 
                 Replicate(player.Name + " arrives from " + oppDirectionString, player);
 
-                response += aetheriaDataAccess.CellDescriptionForPlayer(player);
+                response += mudDataAccess.CellDescriptionForPlayer(player);
             }
             else
             {
@@ -329,7 +329,7 @@ namespace AetheriaWebService.Helpers
         }
         private void Replicate(string message, Player player)
         {
-            var chatUsers = aetheriaDataAccess.GetRelevantChatUsersForPlayerAction(player);
+            var chatUsers = mudDataAccess.GetRelevantChatUsersForPlayerAction(player);
             if (chatUsers.Count > 0)
             {
                 _replicationHelper.ReplicateToClients(message, chatUsers);
