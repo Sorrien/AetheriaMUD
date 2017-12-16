@@ -8,7 +8,7 @@ namespace AetheriaWebService.Helpers
 {
     public interface IAetheriaHelper
     {
-        string ProcessPlayerInput(string input, string chatUserId, string platform);
+        string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform);
     }
     public class AetheriaHelper : IAetheriaHelper
     {
@@ -20,18 +20,19 @@ namespace AetheriaWebService.Helpers
             _replicationHelper = replicationHelper;
         }
 
-        public string ProcessPlayerInput(string input, string chatUserId, string platform)
+        public string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform)
         {
             var player = aetheriaDataAccess.GetPlayer(chatUserId, platform);
-
             string response = "";
+
+
 
             var command = CommandHelper.MapCommand(input);
 
             switch (command)
             {
                 case CommandHelper.CommandEnum.Login:
-                    response = Login(input, player);
+                    response = Login(input, chatUserId, chatUsername, platform, player);
                     break;
                 case CommandHelper.CommandEnum.Speak:
                     response = Speak(input, player);
@@ -75,11 +76,39 @@ namespace AetheriaWebService.Helpers
         }
 
 
-        public string Login(string input, Player player)
+        public string Login(string input, string chatUserId, string chatUsername, string platform, Player player)
         {
             //take the player's aetheria login data and add their current username to the whitelist of users for that player
 
-            return "not implemented";
+            var response = "";
+            if (player == null)
+            {
+                var words = input.Split(" ").ToList();
+                words.RemoveAt(0);
+                var characterName = "";
+                if (input.Contains("\""))
+                {
+                    var startIndex = words.IndexOf(words.Find(x => x[0] == '"'));
+                    var endIndex = words.IndexOf(words.Find(x => x[x.Length] == '"'));
+                    for (int i = startIndex; i <= endIndex; i++)
+                    {
+                        characterName += words[i].Replace("\"", "");
+                    }
+                }
+                else
+                {
+                    characterName = words[0];
+                }
+
+                var newPlayer = aetheriaDataAccess.CreateNewPlayer(characterName, platform, chatUsername, chatUserId);
+                response = "Created Player " + newPlayer.Name + " for user " + chatUsername;
+            }
+            else
+            {
+                response = "You are already logged in.";
+            }
+
+            return response;
         }
 
         public string Speak(string input, Player player)
@@ -87,13 +116,13 @@ namespace AetheriaWebService.Helpers
             var words = input.Split(" ").ToList();
             words.RemoveAt(0);
             //get all players (and maybe one day npcs) in the current cell and send a message to them telling them that this player spoke and what they said
-            var playerStartingPhrase = "You say ";
-            var otherStartingPhrase = player.Name + " says ";
+            var playerPhrase = "You speak";
+            var otherStartingPhrase = player.Name + ": ";
 
             var message = string.Join(" ", words);
 
             Replicate(otherStartingPhrase + message, player);
-            return playerStartingPhrase + message;
+            return playerPhrase;//playerStartingPhrase + message;
         }
 
         public string Message(string input, Player player)

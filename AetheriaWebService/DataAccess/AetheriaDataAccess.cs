@@ -162,6 +162,11 @@ namespace AetheriaWebService.DataAccess
             db.CharacterStats.Add(characterStats);
             db.ChatUsers.Add(chatUser);
             db.SaveChanges();
+
+            var startingCell = db.Cells.FirstOrDefault(x => x.X == 0 && x.Y == 0 && x.Z == 0);
+            UpdateEntityCell(player, startingCell);
+            db.SaveChanges();
+
             var resultplayer = db.Players.FirstOrDefault(x => x.EntityId == player.EntityId);
             return resultplayer;
         }

@@ -22,21 +22,28 @@ namespace AetheriaWebService.Hubs
         {
             var clientMessage = JsonConvert.DeserializeObject<AetheriaClientMessage>(message);
 
-            var response = _aetheriaHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.Platform);
-            var relevantChatUsers = new List<ChatUserDTO>();
-            relevantChatUsers.Add(new ChatUserDTO
+            var response = _aetheriaHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.ChatUsername, clientMessage.Platform);
+            if (response != "")
             {
-                ChatUserId = clientMessage.ChatUserId,
-                Platform = clientMessage.Platform
-            });
-            var serverResponse = new AetheriaServerResponse
+                var relevantChatUsers = new List<ChatUserDTO>();
+                relevantChatUsers.Add(new ChatUserDTO
+                {
+                    ChatUserId = clientMessage.ChatUserId,
+                    Platform = clientMessage.Platform
+                });
+                var serverResponse = new AetheriaServerResponse
+                {
+                    ServerAuthToken = "TestToken",
+                    RelevantChatUsers = relevantChatUsers,
+                    Response = response
+                };
+                var responseMessage = JsonConvert.SerializeObject(serverResponse);
+                return Clients.All.InvokeAsync("Send", responseMessage);
+            }
+            else
             {
-                ServerAuthToken = "TestToken",
-                RelevantChatUsers = relevantChatUsers,
-                Response = response
-            };
-            var responseMessage = JsonConvert.SerializeObject(serverResponse);
-            return Clients.All.InvokeAsync("Send", responseMessage);
+                return Task.CompletedTask;
+            }
         }
 
         public Task ServerSend(string message)
