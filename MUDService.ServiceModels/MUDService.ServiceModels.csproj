@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Collin Sparks</Authors>
+    <Company>Collin Sparks</Company>
+    <Version>1.1.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="nuget_publish.bat" />
+  </ItemGroup>
 
 </Project>
