@@ -23,6 +23,7 @@ namespace MUDService.Helpers
             Consume = 110,
             Drop = 120,
             Inventory = 130,
+            Teleport = 140
         }
         public static CommandEnum MapCommand(string input)
         {

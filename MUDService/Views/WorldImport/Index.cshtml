@@ -1,0 +1,12 @@
+﻿@using MUDService.ViewModels;
+@model WorldImportViewModel
+@{
+    ViewData["Title"] = "World Importer";
+}
+
+<h2>World Importer</h2>
+
+<form action="Import" method="post">
+    JSON:  <input asp-for="JsonImport" />
+    <button type="submit">Submit</button>
+</form>

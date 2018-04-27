@@ -34,7 +34,7 @@ namespace MUDService
             services.AddSignalR();
             // Add framework services.
             services.AddMvc();
-
+            services.AddRouting();
 
             services.AddScoped<IReplicationHelper, ReplicationHelper>();
             services.AddScoped<IMUDDataAccess, MUDDataAccess>();
