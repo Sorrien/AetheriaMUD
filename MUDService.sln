@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MUDService", "AetheriaWebService\MUDService.csproj", "{EBDCAC3C-33E9-456F-889B-0EAC4DB338FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MUDService", "MUDService\MUDService.csproj", "{EBDCAC3C-33E9-456F-889B-0EAC4DB338FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MUDService.ServiceModels", "MUDService.ServiceModels\MUDService.ServiceModels.csproj", "{F826B222-03F9-42CA-8F18-3E1126CD7878}"
 EndProject

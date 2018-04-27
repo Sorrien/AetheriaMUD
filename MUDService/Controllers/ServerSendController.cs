@@ -8,7 +8,7 @@ using MUDService.Helpers;
 namespace MUDService.Controllers
 {
     [Produces("application/json")]
-    [Route("api/ServerSend")]
+    [Route("api/[controller]")]
     public class ServerSendController : Controller
     {
         private IHubContext<MUDHub> _messageHubContext;
