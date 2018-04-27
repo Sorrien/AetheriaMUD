@@ -35,13 +35,6 @@ namespace MUDService.Helpers
 
                 //if (!context.Players.Any())
                 //{
-                //var player = mudDataAccess.CreateNewPlayer("Sorrien", "slack", "collinsparks", "U6G34P0S1");
-                //var player2 = mudDataAccess.CreateNewPlayer("Mavrick", "slack", "connor", "U6P6XEATG");
-                //var player3 = mudDataAccess.CreateNewPlayer("Pasha", "slack", "pasha", "U7DDTDB7F");
-                //var startingCell = context.Cells.FirstOrDefault(x => x.X == 0 && x.Y == 0 && x.Z == 0);
-                //mudDataAccess.UpdateEntityCell(player, startingCell);
-                //mudDataAccess.UpdateEntityCell(player2, startingCell);
-                //mudDataAccess.UpdateEntityCell(player3, startingCell);
                 //}
             }
         }
