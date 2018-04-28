@@ -20,6 +20,7 @@ namespace MUDService.DataAccess
         Cell CreateNewCell(World World, int X, int Y, int Z, string Description, List<Entity> Entities);
         List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player);
         string CellDescriptionForPlayer(Player player);
+        Cell GetCellInWorld(string worldName, int x, int y, int z);
     }
     public class MUDDataAccess : IMUDDataAccess
     {
@@ -33,6 +34,12 @@ namespace MUDService.DataAccess
             var player = db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
             //player.Inventory = db.Inventories.Include(x => x.Entities).FirstOrDefault(x => x.InventoryId == player.Inventory.InventoryId);
             return player;
+        }
+        public Cell GetCellInWorld(string worldName, int x, int y, int z)
+        {
+            var world = db.Worlds.Include(c => c.Cells).FirstOrDefault(w => w.Name == worldName);
+            var cell = world.Cells.FirstOrDefault(c => c.X == x && c.Y == y && c.Z == z);
+            return cell;
         }
         public Cell GetCell(Entity entity)
         {

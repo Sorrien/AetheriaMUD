@@ -1,5 +1,6 @@
 ﻿using MUDService.DataAccess;
 using MUDService.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static MUDService.Models.Cell;
@@ -66,6 +67,9 @@ namespace MUDService.Helpers
                     break;
                 case CommandHelper.CommandEnum.Inventory:
                     response = Inventory(player);
+                    break;
+                case CommandHelper.CommandEnum.Teleport:
+                    response = Teleport(input, player);
                     break;
                 default:
                     response = "I don't understand what you want to do.";
@@ -256,9 +260,9 @@ namespace MUDService.Helpers
             var newCell = mudDataAccess.GetCellRelativeToCell(currentCell, direction);
             if (newCell != null)
             {
-                response += "You move " + direction.ToString() + ".\n";
+                response += $"You move {direction.ToString()}.\n";
 
-                Replicate(player.Name + " moves " + direction, player);
+                Replicate($"{player.Name} moves {direction}", player);
 
                 mudDataAccess.UpdateEntityCell(player, newCell);
 
@@ -289,13 +293,52 @@ namespace MUDService.Helpers
                         break;
                 }
 
-                Replicate(player.Name + " arrives from " + oppDirectionString, player);
+                Replicate($"{player.Name} arrives from {oppDirectionString}", player);
 
                 response += mudDataAccess.CellDescriptionForPlayer(player);
             }
             else
             {
                 response += "You cannot go any further in this direction.";
+            }
+            return response;
+        }
+
+        public string Teleport(string input, Player player)
+        {
+            var response = "";
+
+            try
+            {
+                var parameters = input.ToLower().Split(" ");
+
+                var worldName = parameters[0];
+                int.TryParse(parameters[1], out var x);
+                int.TryParse(parameters[2], out var y);
+                int.TryParse(parameters[3], out var z);
+
+                var newCell = mudDataAccess.GetCellInWorld(worldName, x, y, z);
+
+                if (newCell != null)
+                {
+                    response += $"You teleport to {worldName}.\n";
+
+                    Replicate($"{player.Name} teleports out of sight.", player);
+
+                    mudDataAccess.UpdateEntityCell(player, newCell);
+
+                    Replicate($"{player.Name} arrives from a portal", player);
+
+                    response += mudDataAccess.CellDescriptionForPlayer(player);
+                }
+                else
+                {
+                    response += "You cannot go any further in this direction.";
+                }
+            }
+            catch (Exception ex)
+            {
+                response = "The correct format for Teleport is: Teleport world x y z";
             }
             return response;
         }
