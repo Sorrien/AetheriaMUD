@@ -13,14 +13,25 @@ using MUDService.Helpers;
 using MUDService.Hubs;
 using MUDService.DataAccess;
 using Microsoft.AspNetCore.SignalR;
+using Serilog;
 
 namespace MUDService
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
+            Configuration = builder.Build();
             Configuration = configuration;
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
         }
 
         public IConfiguration Configuration { get; }
@@ -28,6 +39,9 @@ namespace MUDService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging(loggingBuilder =>
+          loggingBuilder.AddSerilog(dispose: true));
+
             services.AddDbContextPool<MUDContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("MUDContext")));
 
@@ -45,7 +59,20 @@ namespace MUDService
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+            loggerFactory.AddSerilog();
+            
+            if (env.IsDevelopment())
+            {
+                loggerFactory.AddDebug();
+
+                loggerFactory.AddFile("log.txt");
+            }
+            else
+            {
+                loggerFactory.AddDebug();
+
+                loggerFactory.AddFile("log.txt");
+            }
 
             //if (env.IsDevelopment())
             //{
