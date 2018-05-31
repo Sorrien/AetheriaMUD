@@ -39,7 +39,7 @@ namespace MUDService.Helpers
             };
             var responseMessage = JsonConvert.SerializeObject(serverResponse);
 
-            await _messageHubContext.Clients.All.InvokeAsync("Send", responseMessage);
+            await _messageHubContext.Clients.All.SendAsync("Send", responseMessage);
         }
     }
 }
