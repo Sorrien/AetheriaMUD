@@ -81,7 +81,7 @@ namespace MUDService
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<MUDHub>("MUDHub");
+                routes.MapHub<MUDHub>("/MUDHub");
             });
 
             app.UseMvc();
