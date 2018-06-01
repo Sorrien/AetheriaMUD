@@ -1,6 +1,18 @@
 {
-    "World": {
-        "Name": "Test"
-
-    }
+    "Name": "Test",
+    "Cells": [
+        {
+            "Description": "",
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "Entities": [
+                {
+                    "Name": "",
+                    "Description": "",
+                    "Type": 0
+                }
+            ]
+        }
+    ]
 }
