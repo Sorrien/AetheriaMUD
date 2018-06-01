@@ -38,7 +38,7 @@ namespace MUDService.Hubs
                     Response = response
                 };
                 var responseMessage = JsonConvert.SerializeObject(serverResponse);
-                return Clients.All.InvokeAsync("Send", responseMessage);
+                return Clients.All.SendAsync("Send", responseMessage);
             }
             else
             {
@@ -48,7 +48,7 @@ namespace MUDService.Hubs
 
         public Task ServerSend(string message)
         {
-            return Clients.All.InvokeAsync("ServerSend", message);
+            return Clients.All.SendAsync("ServerSend", message);
         }
     }
 }
