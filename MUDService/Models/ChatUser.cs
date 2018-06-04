@@ -14,5 +14,6 @@ namespace MUDService.Models
         public DateTime LastMessageDate { get; set; }
 
         public Guid PlayerEntityId { get; set; }
+        public bool IsMuted { get; set; }
     }
 }

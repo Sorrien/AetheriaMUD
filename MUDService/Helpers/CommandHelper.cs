@@ -23,14 +23,22 @@ namespace MUDService.Helpers
             Consume = 110,
             Drop = 120,
             Inventory = 130,
-            Teleport = 140
+            Teleport = 140,
+            Help = 150,
+            Rename = 160,
+            Mute = 170,
+            Unmute = 180,
+            Equipment = 190,
+            LookAt = 200
         }
         public static CommandEnum MapCommand(string input)
         {
             //maybe this should also return the keyword it found?
             var command = CommandEnum.None;
 
-            string actionWord = input.ToLower().Split(" ")[0];
+
+            var words = input.ToLower().Split(" ");
+            var actionWord = words[0];
 
             switch (actionWord)
             {
@@ -56,7 +64,14 @@ namespace MUDService.Helpers
                     command = CommandEnum.Open;
                     break;
                 case "look":
-                    command = CommandEnum.Look;
+                    if (words.Length > 1 && words[1] == "at")
+                    {
+                        command = CommandEnum.LookAt;
+                    }
+                    else
+                    {
+                        command = CommandEnum.Look;
+                    }
                     break;
                 case "north":
                 case "south":
@@ -65,6 +80,8 @@ namespace MUDService.Helpers
                 case "up":
                 case "down":
                 case "climb":
+                case "move":
+                case "go":
                     command = CommandEnum.Move;
                     break;
                 case "lock":
@@ -84,6 +101,21 @@ namespace MUDService.Helpers
                     break;
                 case "inventory":
                     command = CommandEnum.Inventory;
+                    break;
+                case "help":
+                    command = CommandEnum.Help;
+                    break;
+                case "rename":
+                    command = CommandEnum.Rename;
+                    break;
+                case "mute":
+                    command = CommandEnum.Mute;
+                    break;
+                case "unmute":
+                    command = CommandEnum.Unmute;
+                    break;
+                case "equipment":
+                    command = CommandEnum.Equipment;
                     break;
             }
 

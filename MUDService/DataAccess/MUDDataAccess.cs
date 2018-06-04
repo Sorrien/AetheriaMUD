@@ -21,6 +21,8 @@ namespace MUDService.DataAccess
         List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player);
         string CellDescriptionForPlayer(Player player);
         Cell GetCellInWorld(string worldName, int x, int y, int z);
+        Task RenameEntity(string NewName, Entity entity);
+        Task UpdatePlayerIsMuted(Player player, bool IsMuted);
     }
     public class MUDDataAccess : IMUDDataAccess
     {
@@ -31,9 +33,14 @@ namespace MUDService.DataAccess
         }
         public Player GetPlayer(string chatUserId, string platform)
         {
-            var player = db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
+            var player = db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).ThenInclude(x => x.Entities).Include(x => x.EquippedWeapon).Include(x => x.WornEquipment).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
             //player.Inventory = db.Inventories.Include(x => x.Entities).FirstOrDefault(x => x.InventoryId == player.Inventory.InventoryId);
             return player;
+        }
+        public List<ChatUser> GetChatUsersForPlayer(Player player)
+        {
+            var chatUsers = db.ChatUsers.Where(x => x.PlayerEntityId == player.EntityId).ToList();
+            return chatUsers;
         }
         public Cell GetCellInWorld(string worldName, int x, int y, int z)
         {
@@ -220,7 +227,7 @@ namespace MUDService.DataAccess
             var playerCell = GetCell(player);
             var playerCellInventory = db.Inventories.Include(i => i.Entities).FirstOrDefault(x => x.InventoryId == playerCell.InventoryId);
             var playerEntities = playerCellInventory.Entities.Where(x => x.Type == Entity.EntityType.Player && x.EntityId != player.EntityId);
-            var chatUsers = db.ChatUsers.Where(x => playerEntities.Any(y => y.EntityId == x.PlayerEntityId)).ToList();
+            var chatUsers = db.ChatUsers.Where(x => playerEntities.Any(y => y.EntityId == x.PlayerEntityId && !x.IsMuted)).ToList();
             return chatUsers;
         }
 
@@ -253,6 +260,24 @@ namespace MUDService.DataAccess
             }
 
             return description;
+        }
+
+        public async Task RenameEntity(string NewName, Entity entity)
+        {
+            entity.Name = NewName;
+            db.Update(entity);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task UpdatePlayerIsMuted(Player player, bool IsMuted)
+        {
+            var chatUsers = GetChatUsersForPlayer(player);
+            foreach(var chatUser in chatUsers)
+            {
+                chatUser.IsMuted = IsMuted;
+            }
+            db.ChatUsers.UpdateRange(chatUsers);
+            await db.SaveChangesAsync();
         }
     }
 }
