@@ -16,14 +16,15 @@ namespace MUDService.Controllers
         public IActionResult Index()
         {
             var model = new WorldImportViewModel();
-            model.JsonImport = "{ \"World\": { \"Name\": \"Test\" } }";
+            model.WorldDefinition = "{\"Name\" : \"Test\"}";
+            var jWorld = JsonConvert.DeserializeObject<JWorld>(model.WorldDefinition);
             return View(model);
         }
 
         [HttpPost]
         public IActionResult Import(WorldImportViewModel viewModel)
         {
-            var jsonString = viewModel.JsonImport;
+            var jsonString = viewModel.WorldDefinition;
 
             var jWorld = JsonConvert.DeserializeObject<JWorld>(jsonString);
             return null;

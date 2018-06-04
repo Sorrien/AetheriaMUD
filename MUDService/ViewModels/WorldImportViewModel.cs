@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace MUDService.ViewModels
 {
+    
     public class WorldImportViewModel
     {
-        public string JsonImport { get; set; }
+        [FromForm]
+        public string WorldDefinition { get; set; }
     }
 }
