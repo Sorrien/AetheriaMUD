@@ -13,18 +13,18 @@ namespace MUDService.Helpers
     }
     public class MUDHelper : IMUDHelper
     {
-        private readonly IMUDDataAccess mudDataAccess;
+        private readonly IMUDDataAccess _mudDataAccess;
         private readonly IReplicationHelper _replicationHelper;
         public MUDHelper(IMUDDataAccess dataAccess, IReplicationHelper replicationHelper)
         {
-            mudDataAccess = dataAccess;
+            _mudDataAccess = dataAccess;
             _replicationHelper = replicationHelper;
         }
 
         public string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform)
         {
-            var player = mudDataAccess.GetPlayer(chatUserId, platform);
-            string response = "";
+            var player = _mudDataAccess.GetPlayer(chatUserId, platform);
+            string response;
 
             var command = CommandHelper.MapCommand(input);
 
@@ -106,28 +106,28 @@ namespace MUDService.Helpers
         {
             //take the player's MUD login data and add their current username to the whitelist of users for that player
 
-
-            var response = "";
+            string response;
             if (player == null)
             {
                 var success = true;
                 var relevantInput = RemoveWordsFromString(0, 1, input);
 
                 var characterName = GetNameFromInput(relevantInput);
+                var loginFailureReason = "";
                 if (string.IsNullOrWhiteSpace(characterName))
                 {
                     success = false;
-                    response = "Please enter a character name.";
+                    loginFailureReason = "Please enter a character name.";
                 }
 
                 if (success)
                 {
-                    var newPlayer = mudDataAccess.CreateNewPlayer(characterName, platform, chatUsername, chatUserId);
-                    response = "Created Player " + newPlayer.Name + " for user " + chatUsername;
+                    var newPlayer = _mudDataAccess.CreateNewPlayer(characterName, platform, chatUsername, chatUserId);
+                    response = $"Created Player {newPlayer.Name} for user {chatUsername}";
                 }
                 else
                 {
-                    response = $"Login Failed: {response}";
+                    response = $"Login Failed: {loginFailureReason}";
                 }
             }
             else
@@ -159,7 +159,6 @@ namespace MUDService.Helpers
             {
                 if (words.Count >= 1)
                 {
-                    //characterName = words[0];
                     characterName = input;
                 }
             }
@@ -190,14 +189,12 @@ namespace MUDService.Helpers
 
         public string Inventory(Player player)
         {
-            var response = "";
-
             var itemNames = new List<string>();
             foreach (var item in player.Inventory.Entities)
             {
                 itemNames.Add(item.Name);
             }
-            response = string.Join(", ", itemNames);
+            var response = string.Join(", ", itemNames);
 
             return response;
         }
@@ -209,12 +206,12 @@ namespace MUDService.Helpers
             var itemName = RemoveWordsFromString(0, 1, input);
 
 
-            var cell = mudDataAccess.GetCell(player);
+            var cell = _mudDataAccess.GetCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
-                mudDataAccess.UpdateEntityInventory(cell.Inventory, player.Inventory, item);
+                _mudDataAccess.UpdateEntityInventory(cell.Inventory, player.Inventory, item);
                 var playerStartingPhrase = "You pickup ";
                 var otherStartingPhrase = player.Name + " picks up a ";
 
@@ -234,21 +231,21 @@ namespace MUDService.Helpers
             var response = "";
             var itemName = RemoveWordsFromString(0, 1, input);
 
-            var cell = mudDataAccess.GetCell(player);
+            var cell = _mudDataAccess.GetCell(player);
             var item = player.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
-                mudDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
+                _mudDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
                 var playerStartingPhrase = "You drop ";
-                var otherStartingPhrase = player.Name + " drops a ";
+                var otherStartingPhrase = $"{player.Name} drops a ";
 
-                response += playerStartingPhrase + item.Name;
-                Replicate(otherStartingPhrase + item.Name, player);
+                response += $"{playerStartingPhrase}{item.Name}";
+                Replicate($"{otherStartingPhrase}{item.Name}", player);
             }
             else
             {
-                response = "You do not have a " + itemName + ".";
+                response = $"You do not have a {itemName}.";
             }
 
             return response;
@@ -259,15 +256,16 @@ namespace MUDService.Helpers
             //determine the object to attack and attempt to deal damage with the player's currently equipped weapon
 
             var response = "";
-            var entityName = RemoveWordsFromString(0, 1, input);
+            var entityName = RemoveWordsFromString(0, 1, input).ToLower();
 
 
-            var cell = mudDataAccess.GetCell(player);
+            var cell = _mudDataAccess.GetCell(player);
             var entity = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(entityName));
+
 
             if (entity != null)
             {
-                if (entity.Type == Entity.EntityType.NPC && entity.Type == Entity.EntityType.Player)
+                if (entity.Type == Entity.EntityType.NPC || entity.Type == Entity.EntityType.Player)
                 {
                     //TODO: there should be a way for the person being attacked to see a message specific to them
                     var replicateResponse = "";
@@ -320,8 +318,8 @@ namespace MUDService.Helpers
         public string Look(string input, Player player)
         {
             //describe the player's current cell
-            var description = mudDataAccess.CellDescriptionForPlayer(player);
-            Replicate(player.Name + " looks around.", player);
+            var description = _mudDataAccess.CellDescriptionForPlayer(player);
+            Replicate($"{player.Name} looks around.", player);
 
             return description;
         }
@@ -344,7 +342,7 @@ namespace MUDService.Helpers
             var response = "";
             //get direction, move player and return the player's new location
             var words = input.ToLower().Split(" ").ToList();
-            var word = "";
+            string word;
             if (IsDirection(words[0]))
             {
                 word = words[0];
@@ -375,15 +373,15 @@ namespace MUDService.Helpers
                     direction = DirectionEnum.Down;
                     break;
             }
-            var currentCell = mudDataAccess.GetCell(player);
-            var newCell = mudDataAccess.GetCellRelativeToCell(currentCell, direction);
+            var currentCell = _mudDataAccess.GetCell(player);
+            var newCell = _mudDataAccess.GetCellRelativeToCell(currentCell, direction);
             if (newCell != null)
             {
                 response += $"You move {direction.ToString()}.\n";
 
                 Replicate($"{player.Name} moves {direction}", player);
 
-                mudDataAccess.UpdateEntityCell(player, newCell);
+                _mudDataAccess.UpdateEntityCell(player, newCell);
 
                 var oppDirectionString = "";
 
@@ -414,7 +412,7 @@ namespace MUDService.Helpers
 
                 Replicate($"{player.Name} arrives from {oppDirectionString}", player);
 
-                response += mudDataAccess.CellDescriptionForPlayer(player);
+                response += _mudDataAccess.CellDescriptionForPlayer(player);
             }
             else
             {
@@ -436,7 +434,7 @@ namespace MUDService.Helpers
                 int.TryParse(parameters[2], out var y);
                 int.TryParse(parameters[3], out var z);
 
-                var newCell = mudDataAccess.GetCellInWorld(worldName, x, y, z);
+                var newCell = _mudDataAccess.GetCellInWorld(worldName, x, y, z);
 
                 if (newCell != null)
                 {
@@ -444,18 +442,18 @@ namespace MUDService.Helpers
 
                     Replicate($"{player.Name} teleports out of sight.", player);
 
-                    mudDataAccess.UpdateEntityCell(player, newCell);
+                    _mudDataAccess.UpdateEntityCell(player, newCell);
 
                     Replicate($"{player.Name} arrives from a portal", player);
 
-                    response += mudDataAccess.CellDescriptionForPlayer(player);
+                    response += _mudDataAccess.CellDescriptionForPlayer(player);
                 }
                 else
                 {
                     response += "You cannot teleport somewhere that does not exist.";
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 response = "The correct format for Teleport is: Teleport world x y z";
             }
@@ -485,7 +483,7 @@ namespace MUDService.Helpers
 
         private void Replicate(string message, Player player)
         {
-            var chatUsers = mudDataAccess.GetRelevantChatUsersForPlayerAction(player);
+            var chatUsers = _mudDataAccess.GetRelevantChatUsersForPlayerAction(player);
             if (chatUsers.Count > 0)
             {
                 _replicationHelper.ReplicateToClients(message, chatUsers);
@@ -498,6 +496,7 @@ namespace MUDService.Helpers
 
             var commandValues = Enum.GetValues(typeof(CommandHelper.CommandEnum)).Cast<CommandHelper.CommandEnum>().ToList();
             commandValues.Remove(CommandHelper.CommandEnum.Help);
+            commandValues.Remove(CommandHelper.CommandEnum.None);
 
             foreach (var command in commandValues)
             {
@@ -509,20 +508,19 @@ namespace MUDService.Helpers
 
         public string Rename(string input, Player player)
         {
-            var response = "";
             var relevantInput = RemoveWordsFromString(0, 1, input);
             var newName = GetNameFromInput(relevantInput);
-            mudDataAccess.RenameEntity(newName, player);
-            response = $"Your new name is {newName}";
+            _mudDataAccess.RenameEntity(newName, player);
+            var response = $"Your new name is {newName}";
 
             return response;
         }
 
         public string Mute(string input, Player player)
         {
-            var response = "You will no longer receive notifcations, please use the unmuted command to unmute when you are ready.";
+            var response = "You will no longer receive notifcations, please use the unmute command to unmute when you are ready.";
 
-            mudDataAccess.UpdatePlayerIsMuted(player, true);
+            _mudDataAccess.UpdatePlayerIsMuted(player, true);
 
             return response;
         }
@@ -531,7 +529,7 @@ namespace MUDService.Helpers
         {
             var response = "You will now receive notifications again.";
 
-            mudDataAccess.UpdatePlayerIsMuted(player, false);
+            _mudDataAccess.UpdatePlayerIsMuted(player, false);
 
             return response;
         }
@@ -573,7 +571,7 @@ namespace MUDService.Helpers
             var relevantInput = RemoveWordsFromString(0, 2, input);
             var name = GetNameFromInput(relevantInput);
 
-            var cell = mudDataAccess.GetCell(player);
+            var cell = _mudDataAccess.GetCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(name));
 
             if (item != null)
@@ -586,7 +584,7 @@ namespace MUDService.Helpers
             }
             else
             {
-                response = $"You do not see {name}";
+                response = $"You do not see {name}.";
             }
 
             return response;
@@ -594,10 +592,9 @@ namespace MUDService.Helpers
 
         public string RemoveWordsFromString(int startIndex, int count, string input)
         {
-            var result = "";
             var words = input.Split(" ").ToList();
             words.RemoveRange(startIndex, count);
-            result = string.Join(" ", words);
+            var result = string.Join(" ", words);
             return result;
         }
     }

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MUDService.Models;
-using Microsoft.EntityFrameworkCore;
 using MUDService.Helpers;
+using MUDService.Models;
+using System;
 
 namespace MUDService
 {
@@ -28,8 +24,7 @@ namespace MUDService
                 {
                     // Requires using RazorPagesMovie.Models;
                     scope.ServiceProvider.GetService<MUDContext>().Database.Migrate();
-                    scope.ServiceProvider.GetService<MUDContext>().EnsureSeedData();
-                    
+                    scope.ServiceProvider.GetService<MUDContext>().EnsureSeedData();                    
                 }
                 catch (Exception ex)
                 {

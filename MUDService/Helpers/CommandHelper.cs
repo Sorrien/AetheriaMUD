@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace MUDService.Helpers
+﻿namespace MUDService.Helpers
 {
     public class CommandHelper
     {
@@ -35,7 +30,6 @@ namespace MUDService.Helpers
         {
             //maybe this should also return the keyword it found?
             var command = CommandEnum.None;
-
 
             var words = input.ToLower().Split(" ");
             var actionWord = words[0];
@@ -116,6 +110,9 @@ namespace MUDService.Helpers
                     break;
                 case "equipment":
                     command = CommandEnum.Equipment;
+                    break;
+                case "teleport":
+                    command = CommandEnum.Teleport;
                     break;
             }
 
