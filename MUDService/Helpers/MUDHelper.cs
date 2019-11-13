@@ -1,4 +1,5 @@
 ﻿using MUDService.DataAccess;
+using MUDService.Logic;
 using MUDService.Models;
 using System;
 using System.Collections.Generic;
@@ -14,11 +15,11 @@ namespace MUDService.Helpers
     public class MUDHelper : IMUDHelper
     {
         private readonly IMUDDataAccess _mudDataAccess;
-        private readonly IReplicationHelper _replicationHelper;
-        public MUDHelper(IMUDDataAccess dataAccess, IReplicationHelper replicationHelper)
+        private readonly IReplicationLogic _replicationLogic;
+        public MUDHelper(IMUDDataAccess dataAccess, IReplicationLogic replicationLogic)
         {
             _mudDataAccess = dataAccess;
-            _replicationHelper = replicationHelper;
+            _replicationLogic = replicationLogic;
         }
 
         public string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform)
@@ -110,9 +111,9 @@ namespace MUDService.Helpers
             if (player == null)
             {
                 var success = true;
-                var relevantInput = RemoveWordsFromString(0, 1, input);
+                var relevantInput = input.RemoveWordsFromString(0, 1);
 
-                var characterName = GetNameFromInput(relevantInput);
+                var characterName = relevantInput.GetNameFromInput();
                 var loginFailureReason = "";
                 if (string.IsNullOrWhiteSpace(characterName))
                 {
@@ -136,34 +137,6 @@ namespace MUDService.Helpers
             }
 
             return response;
-        }
-
-        public string GetNameFromInput(string input)
-        {
-            var words = input.Split(" ").ToList();
-            var characterName = "";
-            if (input.Contains("\""))
-            {
-                var startIndex = words.IndexOf(words.Find(x => x[0] == '"'));
-                var endIndex = words.IndexOf(words.Find(x => x[x.Length - 1] == '"'));
-                for (int i = startIndex; i <= endIndex; i++)
-                {
-                    characterName += words[i].Replace("\"", "") + " ";
-                }
-                if (characterName[characterName.Length - 1] == ' ')
-                {
-                    characterName = characterName.TrimEnd(' ');
-                }
-            }
-            else
-            {
-                if (words.Count >= 1)
-                {
-                    characterName = input;
-                }
-            }
-
-            return characterName;
         }
 
         public string Speak(string input, Player player)
@@ -203,7 +176,7 @@ namespace MUDService.Helpers
         {
             //determine what the player wants to take by comparing the subject of their sentence with items in the current cell, attempt to add that item to their inventory
             var response = "";
-            var itemName = RemoveWordsFromString(0, 1, input);
+            var itemName = input.RemoveWordsFromString(0, 1);
 
 
             var cell = _mudDataAccess.GetCell(player);
@@ -229,7 +202,7 @@ namespace MUDService.Helpers
         public string Drop(string input, Player player)
         {
             var response = "";
-            var itemName = RemoveWordsFromString(0, 1, input);
+            var itemName = input.RemoveWordsFromString(0, 1);
 
             var cell = _mudDataAccess.GetCell(player);
             var item = player.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
@@ -256,8 +229,7 @@ namespace MUDService.Helpers
             //determine the object to attack and attempt to deal damage with the player's currently equipped weapon
 
             var response = "";
-            var entityName = RemoveWordsFromString(0, 1, input).ToLower();
-
+            var entityName = input.RemoveWordsFromString(0, 1).ToLower();
 
             var cell = _mudDataAccess.GetCell(player);
             var entity = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(entityName));
@@ -349,7 +321,7 @@ namespace MUDService.Helpers
             }
             else
             {
-                word = RemoveWordsFromString(0, 1, input);
+                word = input.RemoveWordsFromString(0, 1);
             }
             var direction = DirectionEnum.None;
             switch (word)
@@ -483,11 +455,7 @@ namespace MUDService.Helpers
 
         private void Replicate(string message, Player player)
         {
-            var chatUsers = _mudDataAccess.GetRelevantChatUsersForPlayerAction(player);
-            if (chatUsers.Count > 0)
-            {
-                _replicationHelper.ReplicateToClients(message, chatUsers);
-            }
+            _replicationLogic.ReplicatePlayerAction(message, player);
         }
 
         public string Help(string input, Player player)
@@ -508,8 +476,8 @@ namespace MUDService.Helpers
 
         public string Rename(string input, Player player)
         {
-            var relevantInput = RemoveWordsFromString(0, 1, input);
-            var newName = GetNameFromInput(relevantInput);
+            var relevantInput = input.RemoveWordsFromString(0, 1);
+            var newName = relevantInput.GetNameFromInput();
             _mudDataAccess.RenameEntity(newName, player);
             var response = $"Your new name is {newName}";
 
@@ -568,8 +536,8 @@ namespace MUDService.Helpers
         public string LookAt(string input, Player player)
         {
             var response = "";
-            var relevantInput = RemoveWordsFromString(0, 2, input);
-            var name = GetNameFromInput(relevantInput);
+            var relevantInput = input.RemoveWordsFromString(0, 2);
+            var name = relevantInput.GetNameFromInput();
 
             var cell = _mudDataAccess.GetCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(name));
@@ -590,12 +558,6 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string RemoveWordsFromString(int startIndex, int count, string input)
-        {
-            var words = input.Split(" ").ToList();
-            words.RemoveRange(startIndex, count);
-            var result = string.Join(" ", words);
-            return result;
-        }
+        
     }
 }

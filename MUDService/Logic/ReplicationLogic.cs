@@ -1,27 +1,42 @@
-﻿using MUDService.Hubs;
+﻿using Microsoft.AspNetCore.SignalR;
+using MUDService.DataAccess;
+using MUDService.Hubs;
 using MUDService.Models;
 using MUDService.ServiceModels;
-using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace MUDService.Helpers
+namespace MUDService.Logic
 {
-    public interface IReplicationHelper
+    public interface IReplicationLogic
     {
-        void ReplicateToClients(string message, List<ChatUser> chatUsers);
+        Task ReplicatePlayerAction(string message, Player player);
+        Task ReplicateToClients(string message, List<ChatUser> chatUsers);
     }
-    public class ReplicationHelper : IReplicationHelper
+    public class ReplicationLogic : IReplicationLogic
     {
         private readonly IHubContext<MUDHub> _messageHubContext;
+        private readonly IMUDDataAccess _mudDataAccess;
 
-        public ReplicationHelper(IHubContext<MUDHub> messageHubContext)
+        public ReplicationLogic(IHubContext<MUDHub> messageHubContext, IMUDDataAccess mudDataAccess)
         {
             _messageHubContext = messageHubContext;
+            _mudDataAccess = mudDataAccess;
         }
 
-        public async void ReplicateToClients(string message, List<ChatUser> chatUsers)
+        public async Task ReplicatePlayerAction(string message, Player player)
         {
+            var chatUsers = _mudDataAccess.GetRelevantChatUsersForPlayerAction(player);
+            if (chatUsers.Count > 0)
+            {
+                await ReplicateToClients(message, chatUsers);
+            }
+        }
+
+        public async Task ReplicateToClients(string message, List<ChatUser> chatUsers)
+        {
+
             var relevantChatUsers = new List<ChatUserDTO>();
             foreach (var chatUser in chatUsers)
             {

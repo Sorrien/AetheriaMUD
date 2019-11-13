@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using MUDService.DataAccess;
 using MUDService.Helpers;
 using MUDService.Hubs;
+using MUDService.Logic;
 using MUDService.Models;
 
 namespace MUDService
@@ -36,13 +37,13 @@ namespace MUDService
             // Add framework services.
             services.AddMvc();
 
-            services.AddScoped<IReplicationHelper, ReplicationHelper>();
+            services.AddScoped<IReplicationLogic, ReplicationLogic>();
             services.AddScoped<IMUDDataAccess, MUDDataAccess>();
             services.AddScoped<IMUDHelper, MUDHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseEndpoints(endpoints =>
             {

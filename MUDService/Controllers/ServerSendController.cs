@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using MUDService.Hubs;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Mvc;
+using MUDService.Logic;
 using MUDService.Models;
-using MUDService.Helpers;
+using System.Collections.Generic;
 
 namespace MUDService.Controllers
 {
@@ -11,18 +9,17 @@ namespace MUDService.Controllers
     [Route("api/[controller]")]
     public class ServerSendController : Controller
     {
-        private IHubContext<MUDHub> _messageHubContext;
+        private readonly IReplicationLogic _replicationLogic;
 
-        public ServerSendController(IHubContext<MUDHub> messageHubContext)
+        public ServerSendController(IReplicationLogic replicationLogic)
         {
-            _messageHubContext = messageHubContext;
+            _replicationLogic = replicationLogic;
         }
 
         [HttpPost]
         public void Send(string value, List<ChatUser> chatUsers)
         {
-            var replicationHelper = new ReplicationHelper(_messageHubContext);
-            replicationHelper.ReplicateToClients(value, chatUsers);
+            _replicationLogic.ReplicateToClients(value, chatUsers);
         }
     }
 }
