@@ -38,6 +38,7 @@ namespace MUDService
             services.AddMvc();
 
             services.AddScoped<IReplicationLogic, ReplicationLogic>();
+            services.AddScoped<ICellLogic, CellLogic>();
             services.AddScoped<IMUDDataAccess, MUDDataAccess>();
             services.AddScoped<IMUDHelper, MUDHelper>();
         }

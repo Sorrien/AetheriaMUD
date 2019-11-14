@@ -4,6 +4,7 @@ using MUDService.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using static MUDService.Models.Cell;
 
 namespace MUDService.Helpers
@@ -16,10 +17,12 @@ namespace MUDService.Helpers
     {
         private readonly IMUDDataAccess _mudDataAccess;
         private readonly IReplicationLogic _replicationLogic;
-        public MUDHelper(IMUDDataAccess dataAccess, IReplicationLogic replicationLogic)
+        private readonly ICellLogic _cellLogic;
+        public MUDHelper(IMUDDataAccess dataAccess, IReplicationLogic replicationLogic, ICellLogic cellLogic)
         {
             _mudDataAccess = dataAccess;
             _replicationLogic = replicationLogic;
+            _cellLogic = cellLogic;
         }
 
         public string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform)
@@ -141,16 +144,12 @@ namespace MUDService.Helpers
 
         public string Speak(string input, Player player)
         {
-            var words = input.Split(" ").ToList();
-            words.RemoveAt(0);
             //get all players (and maybe one day npcs) in the current cell and send a message to them telling them that this player spoke and what they said
             var playerPhrase = "You speak";
-            var otherStartingPhrase = player.Name + ": ";
+            var message = input.RemoveWordsFromString(0, 1);
 
-            var message = string.Join(" ", words);
-
-            Replicate(otherStartingPhrase + message, player);
-            return playerPhrase;//playerStartingPhrase + message;
+            Replicate($"{player.Name}: {message}", player);
+            return playerPhrase;
         }
 
         public string Message(string input, Player player)
@@ -179,21 +178,19 @@ namespace MUDService.Helpers
             var itemName = input.RemoveWordsFromString(0, 1);
 
 
-            var cell = _mudDataAccess.GetCell(player);
+            var cell = _cellLogic.GetPlayerCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
                 _mudDataAccess.UpdateEntityInventory(cell.Inventory, player.Inventory, item);
-                var playerStartingPhrase = "You pickup ";
-                var otherStartingPhrase = player.Name + " picks up a ";
 
-                response += playerStartingPhrase + item.Name;
-                Replicate(otherStartingPhrase + item.Name, player);
+                response += $"You pickup {item.Name}";
+                Replicate($"{player.Name} picks up {item.Name.GetAOrAnFromInput()} {item.Name}", player);
             }
             else
             {
-                response = "You do not see " + itemName;
+                response = $"You do not see {item.Name.GetAOrAnFromInput()} {itemName}";
             }
 
             return response;
@@ -204,21 +201,18 @@ namespace MUDService.Helpers
             var response = "";
             var itemName = input.RemoveWordsFromString(0, 1);
 
-            var cell = _mudDataAccess.GetCell(player);
+            var cell = _cellLogic.GetPlayerCell(player);
             var item = player.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
                 _mudDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
-                var playerStartingPhrase = "You drop ";
-                var otherStartingPhrase = $"{player.Name} drops a ";
-
-                response += $"{playerStartingPhrase}{item.Name}";
-                Replicate($"{otherStartingPhrase}{item.Name}", player);
+                response += $"You drop {item.Name}";
+                Replicate($"{player.Name} drops {item.Name.GetAOrAnFromInput()} {item.Name}", player);
             }
             else
             {
-                response = $"You do not have a {itemName}.";
+                response = $"You do not have {item.Name.GetAOrAnFromInput()} {itemName}.";
             }
 
             return response;
@@ -231,7 +225,7 @@ namespace MUDService.Helpers
             var response = "";
             var entityName = input.RemoveWordsFromString(0, 1).ToLower();
 
-            var cell = _mudDataAccess.GetCell(player);
+            var cell = _cellLogic.GetPlayerCell(player);
             var entity = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(entityName));
 
 
@@ -274,7 +268,7 @@ namespace MUDService.Helpers
             }
             else
             {
-                response = "You do not see " + entityName;
+                response = $"You do not see {entityName}";
             }
 
             return response;
@@ -290,7 +284,7 @@ namespace MUDService.Helpers
         public string Look(string input, Player player)
         {
             //describe the player's current cell
-            var description = _mudDataAccess.CellDescriptionForPlayer(player);
+            var description = _cellLogic.CellDescriptionForPlayer(player);
             Replicate($"{player.Name} looks around.", player);
 
             return description;
@@ -345,17 +339,17 @@ namespace MUDService.Helpers
                     direction = DirectionEnum.Down;
                     break;
             }
-            var currentCell = _mudDataAccess.GetCell(player);
-            var newCell = _mudDataAccess.GetCellRelativeToCell(currentCell, direction);
+            var currentCell = _cellLogic.GetPlayerCell(player);
+            var newCell = _cellLogic.GetCellRelativeToCell(currentCell, direction);
             if (newCell != null)
             {
                 response += $"You move {direction.ToString()}.\n";
 
                 Replicate($"{player.Name} moves {direction}", player);
 
-                _mudDataAccess.UpdateEntityCell(player, newCell);
+                _cellLogic.UpdateEntityCell(player, newCell);
 
-                var oppDirectionString = "";
+                string oppDirectionString;
 
                 switch (direction)
                 {
@@ -384,7 +378,7 @@ namespace MUDService.Helpers
 
                 Replicate($"{player.Name} arrives from {oppDirectionString}", player);
 
-                response += _mudDataAccess.CellDescriptionForPlayer(player);
+                response += _cellLogic.CellDescriptionForPlayer(player);
             }
             else
             {
@@ -406,7 +400,7 @@ namespace MUDService.Helpers
                 int.TryParse(parameters[2], out var y);
                 int.TryParse(parameters[3], out var z);
 
-                var newCell = _mudDataAccess.GetCellInWorld(worldName, x, y, z);
+                var newCell = _cellLogic.GetCellInWorld(worldName, x, y, z);
 
                 if (newCell != null)
                 {
@@ -414,11 +408,11 @@ namespace MUDService.Helpers
 
                     Replicate($"{player.Name} teleports out of sight.", player);
 
-                    _mudDataAccess.UpdateEntityCell(player, newCell);
+                    _cellLogic.UpdateEntityCell(player, newCell);
 
-                    Replicate($"{player.Name} arrives from a portal", player);
+                    Replicate($"{player.Name} arrives from a portal.", player);
 
-                    response += _mudDataAccess.CellDescriptionForPlayer(player);
+                    response += _cellLogic.CellDescriptionForPlayer(player);
                 }
                 else
                 {
@@ -512,7 +506,7 @@ namespace MUDService.Helpers
             }
             else
             {
-                response += $"You are wielding a {player.EquippedWeapon.Name}. ";
+                response += $"You are wielding {player.EquippedWeapon.Name.GetAOrAnFromInput()} {player.EquippedWeapon.Name}. ";
             }
 
             if (player.WornEquipment != null && player.WornEquipment.Count > 0)
@@ -535,19 +529,19 @@ namespace MUDService.Helpers
 
         public string LookAt(string input, Player player)
         {
-            var response = "";
+            string response;
             var relevantInput = input.RemoveWordsFromString(0, 2);
             var name = relevantInput.GetNameFromInput();
 
-            var cell = _mudDataAccess.GetCell(player);
+            var cell = _cellLogic.GetPlayerCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(name));
 
             if (item != null)
             {
-                var playerPhrase = $"You see a {item.Name}. {item.Description}";
+                var playerPhrase = $"You see {item.Name.GetAOrAnFromInput()} {item.Name}. {item.Description}";
                 var otherPhrase = $"{player.Name} looks at {item.Name}";
 
-                response += playerPhrase;
+                response = playerPhrase;
                 Replicate(otherPhrase, player);
             }
             else
@@ -557,7 +551,5 @@ namespace MUDService.Helpers
 
             return response;
         }
-
-        
     }
 }

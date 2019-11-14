@@ -72,5 +72,32 @@ namespace MUDService.Helpers
 
             return characterName;
         }
+        const string a = "a";
+        const string an = "an";
+        public static string GetAOrAnFromInput(this string input)
+        {
+            var firstCharacter = input[0];
+            var firstWord = input.Split(" ").First();
+
+            switch (firstWord)
+            {
+                case "hour":
+                    return an;
+                case "university":
+                    return a;
+                default:
+                    switch (firstCharacter)
+                    {
+                        case 'a':
+                        case 'e':
+                        case 'i':
+                        case 'o':
+                        case 'u':
+                            return an;
+                        default:
+                            return a;
+                    }
+            }
+        }
     }
 }

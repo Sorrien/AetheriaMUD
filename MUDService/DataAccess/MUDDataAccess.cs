@@ -12,14 +12,12 @@ namespace MUDService.DataAccess
     {
         Player GetPlayer(string chatUserId, string platform);
         Cell GetCell(Entity entity);
-        Cell GetCellRelativeToCell(Cell cell, DirectionEnum direction);
         void UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity);
         void UpdateEntityCell(Entity entity, Cell newCell);
         Player CreateNewPlayer(string PlayerName, string Platform, string ChatUsername, string ChatUserId);
         World CreateNewWorld(string Name);
         Cell CreateNewCell(World World, int X, int Y, int Z, string Description, List<Entity> Entities);
         List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player);
-        string CellDescriptionForPlayer(Player player);
         Cell GetCellInWorld(string worldName, int x, int y, int z);
         Task RenameEntity(string NewName, Entity entity);
         Task UpdatePlayerIsMuted(Player player, bool IsMuted);
@@ -52,38 +50,6 @@ namespace MUDService.DataAccess
         {
             var cell = db.Cells.Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefault(x => x.Inventory.Entities.Any(y => y == entity));
             return cell;
-        }
-        public Cell GetCellRelativeToCell(Cell cell, DirectionEnum direction)
-        {
-            Cell resultCell;
-            float X = cell.X;
-            float Y = cell.Y;
-            float Z = cell.Z;
-            switch (direction)
-            {
-                case DirectionEnum.North:
-                    X++;
-                    break;
-                case DirectionEnum.South:
-                    X--;
-                    break;
-                case DirectionEnum.East:
-                    Y++;
-                    break;
-                case DirectionEnum.West:
-                    Y--;
-                    break;
-                case DirectionEnum.Up:
-                    Z++;
-                    break;
-                case DirectionEnum.Down:
-                    Z--;
-                    break;
-            }
-
-            resultCell = db.Cells.FirstOrDefault(c => c.X == X && c.Y == Y && c.Z == Z);
-
-            return resultCell;
         }
         public void UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity)
         {
@@ -229,37 +195,6 @@ namespace MUDService.DataAccess
             var playerEntities = playerCellInventory.Entities.Where(x => x.Type == Entity.EntityType.Player && x.EntityId != player.EntityId);
             var chatUsers = db.ChatUsers.Where(x => playerEntities.Any(y => y.EntityId == x.PlayerEntityId && !x.IsMuted)).ToList();
             return chatUsers;
-        }
-
-        public string CellDescriptionForPlayer(Player player)
-        {
-            var description = "";
-
-            var cell = GetCell(player);
-
-            description += cell.Description;
-
-            if (cell.Inventory.Entities.Count > 1)
-            {
-                description += " You can also see the following: ";
-                var vowels = new string[5] { "a", "e", "i", "o", "u" };
-                var descriptionItems = new List<string>();
-                foreach (var entity in cell.Inventory.Entities.Where(x => x.EntityId != player.EntityId))
-                {
-                    var startsWithVowel = vowels.Contains(entity.Name.Split()[0]);
-                    if (entity.Type == Entity.EntityType.Player)
-                    {
-                        description += " " + entity.Name + ", ";
-                    }
-                    else
-                    {
-                        description += (startsWithVowel ? "an" : "a") + " " + entity.Name + ", ";
-                    }
-                }
-                description = description.Substring(0, description.Length - 2);
-            }
-
-            return description;
         }
 
         public async Task RenameEntity(string NewName, Entity entity)
