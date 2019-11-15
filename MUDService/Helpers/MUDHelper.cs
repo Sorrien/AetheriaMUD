@@ -166,7 +166,9 @@ namespace MUDService.Helpers
             {
                 itemNames.Add(item.Name);
             }
-            var response = string.Join(", ", itemNames);
+            var stringBuilder = new StringBuilder();
+            stringBuilder.DescriptionList(itemNames);
+            var response = stringBuilder.ToString();
 
             return response;
         }
@@ -198,7 +200,7 @@ namespace MUDService.Helpers
 
         public string Drop(string input, Player player)
         {
-            var response = "";
+            string response;
             var itemName = input.RemoveWordsFromString(0, 1);
 
             var cell = _cellLogic.GetPlayerCell(player);
@@ -207,7 +209,7 @@ namespace MUDService.Helpers
             if (item != null)
             {
                 _mudDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
-                response += $"You drop {item.Name}";
+                response = $"You drop {item.Name}";
                 Replicate($"{player.Name} drops {item.Name.GetAOrAnFromInput()} {item.Name}", player);
             }
             else
@@ -511,13 +513,16 @@ namespace MUDService.Helpers
 
             if (player.WornEquipment != null && player.WornEquipment.Count > 0)
             {
-                response += "You are wearing: ";
+                var stringBuilder = new StringBuilder();
+                stringBuilder.Append("You are wearing: ");
                 var itemNames = new List<string>();
                 foreach (var equipment in player.WornEquipment)
                 {
                     itemNames.Add(equipment.Name);
                 }
-                string.Join(", ", itemNames);
+                
+                stringBuilder.DescriptionList(itemNames);
+                response += stringBuilder.ToString();
             }
             else
             {

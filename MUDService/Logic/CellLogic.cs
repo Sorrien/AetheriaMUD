@@ -1,7 +1,10 @@
 ﻿using MUDService.DataAccess;
 using MUDService.Helpers;
 using MUDService.Models;
+using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using static MUDService.Models.Cell;
 
 namespace MUDService.Logic
@@ -30,29 +33,30 @@ namespace MUDService.Logic
 
         public string CellDescriptionForPlayer(Player player)
         {
-            var description = "";
+            var cell = GetPlayerCell(player);
+            return CellDescription(cell, player);
+        }
 
-            var cell = _mudDataAccess.GetCell(player);
+        public string CellDescription(Cell cell, Entity exclude)
+        {
+            var stringBuilder = new StringBuilder();
 
-            description += cell.Description;
+            stringBuilder.Append(cell.Description);
+            var validEntities = cell.Inventory.Entities.Where(x => x.EntityId != exclude.EntityId).ToList();
 
-            if (cell.Inventory.Entities.Count > 1)
+            if (validEntities.Count > 1)
             {
-                description += " You can also see the following: ";
-                foreach (var entity in cell.Inventory.Entities.Where(x => x.EntityId != player.EntityId))
-                {
-                    if (entity.Type == Entity.EntityType.Player)
-                    {
-                        description += $" {entity.Name}, ";
-                    }
-                    else
-                    {
-                        description += $"{entity.Name.GetAOrAnFromInput()} {entity.Name}, ";
-                    }
-                }
-                description = description.Substring(0, description.Length - 2);
+                stringBuilder.Append(" You can also see the following: ");
+            }
+            else if (validEntities.Count == 1)
+            {
+                stringBuilder.Append(" You can also see ");
             }
 
+            stringBuilder.DescriptionList(validEntities.Select(x => x.Name).ToList());
+
+            stringBuilder.Append(".");
+            var description = stringBuilder.ToString();
             return description;
         }
 

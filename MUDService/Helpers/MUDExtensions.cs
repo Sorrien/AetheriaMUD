@@ -3,6 +3,7 @@ using MUDService.DataAccess;
 using MUDService.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MUDService.Helpers
 {
@@ -97,6 +98,30 @@ namespace MUDService.Helpers
                         default:
                             return a;
                     }
+            }
+        }
+
+        public static void DescriptionList(this StringBuilder stringBuilder, List<string> items)
+        {
+            if (items.Count > 2)
+            {
+                foreach (var item in items.Take(items.Count - 1))
+                {
+                    stringBuilder.Append(item).Append(", ");
+                }
+                var lastItem = items.Last();
+                stringBuilder.Append("and ").Append(lastItem.GetAOrAnFromInput()).Append(" ").Append(lastItem);
+            }
+            else if (items.Count == 2)
+            {
+                var first = items[0];
+                var second = items[1];
+                stringBuilder.Append(first).Append(", and ").Append(second.GetAOrAnFromInput()).Append(" ").Append(second);
+            }
+            else if (items.Count == 1)
+            {
+                var first = items.First();
+                stringBuilder.Append(first.GetAOrAnFromInput()).Append(" ").Append(first);
             }
         }
     }
