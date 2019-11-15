@@ -27,7 +27,7 @@ namespace MUDService.Logic
 
         public async Task ReplicatePlayerAction(string message, Player player)
         {
-            var chatUsers = _mudDataAccess.GetRelevantChatUsersForPlayerAction(player);
+            var chatUsers = await _mudDataAccess.GetRelevantChatUsersForPlayerAction(player);
             if (chatUsers.Count > 0)
             {
                 await ReplicateToClients(message, chatUsers);

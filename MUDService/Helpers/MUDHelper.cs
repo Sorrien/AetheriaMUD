@@ -5,13 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using static MUDService.Models.Cell;
 
 namespace MUDService.Helpers
 {
     public interface IMUDHelper
     {
-        string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform);
+        Task<string> ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform);
     }
     public class MUDHelper : IMUDHelper
     {
@@ -25,9 +26,9 @@ namespace MUDService.Helpers
             _cellLogic = cellLogic;
         }
 
-        public string ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform)
+        public async Task<string> ProcessPlayerInput(string input, string chatUserId, string chatUsername, string platform)
         {
-            var player = _mudDataAccess.GetPlayer(chatUserId, platform);
+            var player = await _mudDataAccess.GetPlayer(chatUserId, platform);
             string response;
 
             var command = CommandHelper.MapCommand(input);
@@ -41,25 +42,25 @@ namespace MUDService.Helpers
                 switch (command)
                 {
                     case CommandHelper.CommandEnum.Login:
-                        response = Login(input, chatUserId, chatUsername, platform, player);
+                        response = await Login(input, chatUserId, chatUsername, platform, player);
                         break;
                     case CommandHelper.CommandEnum.Speak:
-                        response = Speak(input, player);
+                        response = await Speak(input, player);
                         break;
                     case CommandHelper.CommandEnum.Message:
                         response = Message(input, player);
                         break;
                     case CommandHelper.CommandEnum.Take:
-                        response = Take(input, player);
+                        response = await Take(input, player);
                         break;
                     case CommandHelper.CommandEnum.Attack:
-                        response = Attack(input, player);
+                        response = await Attack(input, player);
                         break;
                     case CommandHelper.CommandEnum.Look:
-                        response = Look(input, player);
+                        response = await Look(input, player);
                         break;
                     case CommandHelper.CommandEnum.Move:
-                        response = Move(input, player);
+                        response = await Move(input, player);
                         break;
                     case CommandHelper.CommandEnum.Lock:
                         response = Lock(input, player);
@@ -71,31 +72,31 @@ namespace MUDService.Helpers
                         response = Consume(input, player);
                         break;
                     case CommandHelper.CommandEnum.Drop:
-                        response = Drop(input, player);
+                        response = await Drop(input, player);
                         break;
                     case CommandHelper.CommandEnum.Inventory:
                         response = Inventory(player);
                         break;
                     case CommandHelper.CommandEnum.Teleport:
-                        response = Teleport(input, player);
+                        response = await Teleport(input, player);
                         break;
                     case CommandHelper.CommandEnum.Help:
                         response = Help(input, player);
                         break;
                     case CommandHelper.CommandEnum.Rename:
-                        response = Rename(input, player);
+                        response = await Rename(input, player);
                         break;
                     case CommandHelper.CommandEnum.Mute:
-                        response = Mute(input, player);
+                        response = await Mute(input, player);
                         break;
                     case CommandHelper.CommandEnum.Unmute:
-                        response = Unmute(input, player);
+                        response = await Unmute(input, player);
                         break;
                     case CommandHelper.CommandEnum.Equipment:
                         response = Equipment(input, player);
                         break;
                     case CommandHelper.CommandEnum.LookAt:
-                        response = LookAt(input, player);
+                        response = await LookAt(input, player);
                         break;
                     default:
                         response = "I don't understand what you want to do.";
@@ -106,7 +107,7 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string Login(string input, string chatUserId, string chatUsername, string platform, Player player)
+        public async Task<string> Login(string input, string chatUserId, string chatUsername, string platform, Player player)
         {
             //take the player's MUD login data and add their current username to the whitelist of users for that player
 
@@ -126,7 +127,7 @@ namespace MUDService.Helpers
 
                 if (success)
                 {
-                    var newPlayer = _mudDataAccess.CreateNewPlayer(characterName, platform, chatUsername, chatUserId);
+                    var newPlayer = await _mudDataAccess.CreateNewPlayer(characterName, platform, chatUsername, chatUserId);
                     response = $"Created Player {newPlayer.Name} for user {chatUsername}";
                 }
                 else
@@ -142,13 +143,13 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string Speak(string input, Player player)
+        public async Task<string> Speak(string input, Player player)
         {
             //get all players (and maybe one day npcs) in the current cell and send a message to them telling them that this player spoke and what they said
             var playerPhrase = "You speak";
             var message = input.RemoveWordsFromString(0, 1);
 
-            Replicate($"{player.Name}: {message}", player);
+            await Replicate($"{player.Name}: {message}", player);
             return playerPhrase;
         }
 
@@ -173,22 +174,22 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string Take(string input, Player player)
+        public async Task<string> Take(string input, Player player)
         {
             //determine what the player wants to take by comparing the subject of their sentence with items in the current cell, attempt to add that item to their inventory
             var response = "";
             var itemName = input.RemoveWordsFromString(0, 1);
 
 
-            var cell = _cellLogic.GetPlayerCell(player);
+            var cell = await _cellLogic.GetPlayerCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
-                _mudDataAccess.UpdateEntityInventory(cell.Inventory, player.Inventory, item);
+                await _mudDataAccess.UpdateEntityInventory(cell.Inventory, player.Inventory, item);
 
                 response += $"You pickup {item.Name}";
-                Replicate($"{player.Name} picks up {item.Name.GetAOrAnFromInput()} {item.Name}", player);
+                await Replicate($"{player.Name} picks up {item.Name.GetAOrAnFromInput()} {item.Name}", player);
             }
             else
             {
@@ -198,19 +199,19 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string Drop(string input, Player player)
+        public async Task<string> Drop(string input, Player player)
         {
             string response;
             var itemName = input.RemoveWordsFromString(0, 1);
 
-            var cell = _cellLogic.GetPlayerCell(player);
+            var cell = await _cellLogic.GetPlayerCell(player);
             var item = player.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(itemName));
 
             if (item != null)
             {
-                _mudDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
+                await _mudDataAccess.UpdateEntityInventory(player.Inventory, cell.Inventory, item);
                 response = $"You drop {item.Name}";
-                Replicate($"{player.Name} drops {item.Name.GetAOrAnFromInput()} {item.Name}", player);
+                await Replicate($"{player.Name} drops {item.Name.GetAOrAnFromInput()} {item.Name}", player);
             }
             else
             {
@@ -220,14 +221,14 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string Attack(string input, Player player)
+        public async Task<string> Attack(string input, Player player)
         {
             //determine the object to attack and attempt to deal damage with the player's currently equipped weapon
 
             var response = "";
             var entityName = input.RemoveWordsFromString(0, 1).ToLower();
 
-            var cell = _cellLogic.GetPlayerCell(player);
+            var cell = await _cellLogic.GetPlayerCell(player);
             var entity = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(entityName));
 
 
@@ -260,12 +261,12 @@ namespace MUDService.Helpers
                         replicateResponse = $"{player.Name} tried to attack {entity.Name} but was blocked.";
                     }
 
-                    Replicate(replicateResponse, player);
+                    await Replicate(replicateResponse, player);
                 }
                 else
                 {
                     response = $"You fruitlessly attack {entityName}, and you look silly doing it.";
-                    Replicate($"{player.Name} fruitlessly attacks {entityName}, and they look ridiculous.", player);
+                    await Replicate($"{player.Name} fruitlessly attacks {entityName}, and they look ridiculous.", player);
                 }
             }
             else
@@ -283,11 +284,11 @@ namespace MUDService.Helpers
             return "not implemented";
         }
 
-        public string Look(string input, Player player)
+        public async Task<string> Look(string input, Player player)
         {
             //describe the player's current cell
-            var description = _cellLogic.CellDescriptionForPlayer(player);
-            Replicate($"{player.Name} looks around.", player);
+            var description = await _cellLogic.CellDescriptionForPlayer(player);
+            await Replicate($"{player.Name} looks around.", player);
 
             return description;
         }
@@ -305,7 +306,7 @@ namespace MUDService.Helpers
             return directions.Contains(input);
         }
 
-        public string Move(string input, Player player)
+        public async Task<string> Move(string input, Player player)
         {
             var response = "";
             //get direction, move player and return the player's new location
@@ -341,15 +342,15 @@ namespace MUDService.Helpers
                     direction = DirectionEnum.Down;
                     break;
             }
-            var currentCell = _cellLogic.GetPlayerCell(player);
-            var newCell = _cellLogic.GetCellRelativeToCell(currentCell, direction);
+            var currentCell = await _cellLogic.GetPlayerCell(player);
+            var newCell = await _cellLogic.GetCellRelativeToCell(currentCell, direction);
             if (newCell != null)
             {
                 response += $"You move {direction.ToString()}.\n";
 
-                Replicate($"{player.Name} moves {direction}", player);
+                await Replicate($"{player.Name} moves {direction}", player);
 
-                _cellLogic.UpdateEntityCell(player, newCell);
+                await _cellLogic.UpdateEntityCell(player, newCell);
 
                 string oppDirectionString;
 
@@ -378,7 +379,7 @@ namespace MUDService.Helpers
                         break;
                 }
 
-                Replicate($"{player.Name} arrives from {oppDirectionString}", player);
+                await Replicate($"{player.Name} arrives from {oppDirectionString}", player);
 
                 response += _cellLogic.CellDescriptionForPlayer(player);
             }
@@ -389,7 +390,7 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string Teleport(string input, Player player)
+        public async Task<string> Teleport(string input, Player player)
         {
             var response = "";
 
@@ -402,17 +403,17 @@ namespace MUDService.Helpers
                 int.TryParse(parameters[2], out var y);
                 int.TryParse(parameters[3], out var z);
 
-                var newCell = _cellLogic.GetCellInWorld(worldName, x, y, z);
+                var newCell = await _cellLogic.GetCellInWorld(worldName, x, y, z);
 
                 if (newCell != null)
                 {
                     response += $"You teleport to {worldName}.\n";
 
-                    Replicate($"{player.Name} teleports out of sight.", player);
+                    await Replicate($"{player.Name} teleports out of sight.", player);
 
-                    _cellLogic.UpdateEntityCell(player, newCell);
+                    await _cellLogic.UpdateEntityCell(player, newCell);
 
-                    Replicate($"{player.Name} arrives from a portal.", player);
+                    await Replicate($"{player.Name} arrives from a portal.", player);
 
                     response += _cellLogic.CellDescriptionForPlayer(player);
                 }
@@ -449,9 +450,9 @@ namespace MUDService.Helpers
             return "not implemented";
         }
 
-        private void Replicate(string message, Player player)
+        private async Task Replicate(string message, Player player)
         {
-            _replicationLogic.ReplicatePlayerAction(message, player);
+            await _replicationLogic.ReplicatePlayerAction(message, player);
         }
 
         public string Help(string input, Player player)
@@ -470,30 +471,30 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string Rename(string input, Player player)
+        public async Task<string> Rename(string input, Player player)
         {
             var relevantInput = input.RemoveWordsFromString(0, 1);
             var newName = relevantInput.GetNameFromInput();
-            _mudDataAccess.RenameEntity(newName, player);
+            await _mudDataAccess.RenameEntity(newName, player);
             var response = $"Your new name is {newName}";
 
             return response;
         }
 
-        public string Mute(string input, Player player)
+        public async Task<string> Mute(string input, Player player)
         {
             var response = "You will no longer receive notifcations, please use the unmute command to unmute when you are ready.";
 
-            _mudDataAccess.UpdatePlayerIsMuted(player, true);
+            await _mudDataAccess.UpdatePlayerIsMuted(player, true);
 
             return response;
         }
 
-        public string Unmute(string input, Player player)
+        public async Task<string> Unmute(string input, Player player)
         {
             var response = "You will now receive notifications again.";
 
-            _mudDataAccess.UpdatePlayerIsMuted(player, false);
+            await _mudDataAccess.UpdatePlayerIsMuted(player, false);
 
             return response;
         }
@@ -532,22 +533,21 @@ namespace MUDService.Helpers
             return response;
         }
 
-        public string LookAt(string input, Player player)
+        public async Task<string> LookAt(string input, Player player)
         {
             string response;
             var relevantInput = input.RemoveWordsFromString(0, 2);
             var name = relevantInput.GetNameFromInput();
 
-            var cell = _cellLogic.GetPlayerCell(player);
+            var cell = await _cellLogic.GetPlayerCell(player);
             var item = cell.Inventory.Entities.FirstOrDefault(x => x.Name.ToLower().Contains(name));
 
             if (item != null)
             {
-                var playerPhrase = $"You see {item.Name.GetAOrAnFromInput()} {item.Name}. {item.Description}";
+                response = $"You see {item.Name.GetAOrAnFromInput()} {item.Name}. {item.Description}";
                 var otherPhrase = $"{player.Name} looks at {item.Name}";
 
-                response = playerPhrase;
-                Replicate(otherPhrase, player);
+                await Replicate(otherPhrase, player);
             }
             else
             {

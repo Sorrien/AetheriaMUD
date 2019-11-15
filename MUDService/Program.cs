@@ -7,12 +7,13 @@ using Microsoft.Extensions.Logging;
 using MUDService.Helpers;
 using MUDService.Models;
 using System;
+using System.Threading.Tasks;
 
 namespace MUDService
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var host = BuildWebHost(args);
 
@@ -22,9 +23,8 @@ namespace MUDService
 
                 try
                 {
-                    // Requires using RazorPagesMovie.Models;
                     scope.ServiceProvider.GetService<MUDContext>().Database.Migrate();
-                    scope.ServiceProvider.GetService<MUDContext>().EnsureSeedData();                    
+                    await scope.ServiceProvider.GetService<MUDContext>().EnsureSeedData();                    
                 }
                 catch (Exception ex)
                 {

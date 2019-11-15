@@ -6,7 +6,7 @@ using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace MUDService.UnitTest
 {
@@ -23,7 +23,7 @@ namespace MUDService.UnitTest
         }
 
         [Test]
-        public void GetCellTest()
+        public async Task GetCellTest()
         {
             var player = new Player()
             {
@@ -36,8 +36,8 @@ namespace MUDService.UnitTest
                 World = new World() { Name = "Phantasia" },
                 Description = "What a world"
             };
-            MockMUDDataAccess.Setup(x => x.GetCell(It.Is<Player>(y => y == player))).Returns(setupCell);
-            var cell = cellLogic.GetPlayerCell(player);
+            MockMUDDataAccess.Setup(x => x.GetCell(It.Is<Player>(y => y == player))).ReturnsAsync(setupCell);
+            var cell = await cellLogic.GetPlayerCell(player);
             Assert.AreEqual(setupCell, cell);
         }
 

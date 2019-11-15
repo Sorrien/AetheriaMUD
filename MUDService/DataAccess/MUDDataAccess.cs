@@ -10,15 +10,15 @@ namespace MUDService.DataAccess
 {
     public interface IMUDDataAccess
     {
-        Player GetPlayer(string chatUserId, string platform);
-        Cell GetCell(Entity entity);
-        void UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity);
-        void UpdateEntityCell(Entity entity, Cell newCell);
-        Player CreateNewPlayer(string PlayerName, string Platform, string ChatUsername, string ChatUserId);
-        World CreateNewWorld(string Name);
-        Cell CreateNewCell(World World, int X, int Y, int Z, string Description, List<Entity> Entities);
-        List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player);
-        Cell GetCellInWorld(string worldName, int x, int y, int z);
+        Task<Player> GetPlayer(string chatUserId, string platform);
+        Task<Cell> GetCell(Entity entity);
+        Task UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity);
+        Task UpdateEntityCell(Entity entity, Cell newCell);
+        Task<Player> CreateNewPlayer(string PlayerName, string Platform, string ChatUsername, string ChatUserId);
+        Task<World> CreateNewWorld(string Name);
+        Task<Cell> CreateNewCell(World World, int X, int Y, int Z, string Description, List<Entity> Entities);
+        Task<List<ChatUser>> GetRelevantChatUsersForPlayerAction(Player player);
+        Task<Cell> GetCellInWorld(string worldName, int x, int y, int z);
         Task RenameEntity(string NewName, Entity entity);
         Task UpdatePlayerIsMuted(Player player, bool IsMuted);
     }
@@ -29,55 +29,55 @@ namespace MUDService.DataAccess
         {
             db = context;
         }
-        public Player GetPlayer(string chatUserId, string platform)
+        public async Task<Player> GetPlayer(string chatUserId, string platform)
         {
-            var player = db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).ThenInclude(x => x.Entities).Include(x => x.EquippedWeapon).Include(x => x.WornEquipment).FirstOrDefault(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
+            var player = await db.Players.Include(c => c.ChatUsers).Include(x => x.Inventory).ThenInclude(x => x.Entities).Include(x => x.EquippedWeapon).Include(x => x.WornEquipment).FirstOrDefaultAsync(p => p.ChatUsers.Any(x => x.UserId == chatUserId && x.Platform == platform));
             //player.Inventory = db.Inventories.Include(x => x.Entities).FirstOrDefault(x => x.InventoryId == player.Inventory.InventoryId);
             return player;
         }
-        public List<ChatUser> GetChatUsersForPlayer(Player player)
+        public async Task<List<ChatUser>> GetChatUsersForPlayer(Player player)
         {
-            var chatUsers = db.ChatUsers.Where(x => x.PlayerEntityId == player.EntityId).ToList();
+            var chatUsers = await db.ChatUsers.Where(x => x.PlayerEntityId == player.EntityId).ToListAsync();
             return chatUsers;
         }
-        public Cell GetCellInWorld(string worldName, int x, int y, int z)
+        public async Task<Cell> GetCellInWorld(string worldName, int x, int y, int z)
         {
-            var world = db.Worlds.Include(c => c.Cells).FirstOrDefault(w => w.Name == worldName);
+            var world = await db.Worlds.Include(c => c.Cells).FirstOrDefaultAsync(w => w.Name == worldName);
             var cell = world.Cells.FirstOrDefault(c => c.X == x && c.Y == y && c.Z == z);
             return cell;
         }
-        public Cell GetCell(Entity entity)
+        public async Task<Cell> GetCell(Entity entity)
         {
-            var cell = db.Cells.Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefault(x => x.Inventory.Entities.Any(y => y == entity));
+            var cell = await db.Cells.Include(x => x.Inventory).ThenInclude(x => x.Entities).FirstOrDefaultAsync(x => x.Inventory.Entities.Any(y => y == entity));
             return cell;
         }
-        public void UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity)
+        public async Task UpdateEntityInventory(Inventory old, Inventory newInventory, Entity entity)
         {
             old.Entities.Remove(entity);
             newInventory.Entities.Add(entity);
             db.Update(old);
             db.Update(newInventory);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
-        public void UpdateEntityCell(Entity entity, Cell newCell)
+        public async Task UpdateEntityCell(Entity entity, Cell newCell)
         {
-            var oldCell = GetCell(entity);
+            var oldCell = await GetCell(entity);
             if (oldCell != null)
             {
                 var oldInventory = oldCell.Inventory;
                 oldInventory.Entities.Remove(entity);
                 db.Update(oldInventory);
             }
-            var newInventory = db.Inventories.Include(e => e.Entities).FirstOrDefault(x => x.InventoryId == newCell.InventoryId);
+            var newInventory = await db.Inventories.Include(e => e.Entities).FirstOrDefaultAsync(x => x.InventoryId == newCell.InventoryId);
             if (newInventory.Entities == null)
             {
                 newInventory.Entities = new List<Entity>();
             }
             newInventory.Entities.Add(entity);
             db.Update(newInventory);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
-        public Player CreateNewPlayer(string PlayerName, string Platform, string ChatUsername, string ChatUserId)
+        public async Task<Player> CreateNewPlayer(string PlayerName, string Platform, string ChatUsername, string ChatUserId)
         {
             var chatUser = new ChatUser
             {
@@ -143,14 +143,14 @@ namespace MUDService.DataAccess
             db.ChatUsers.Add(chatUser);
             db.SaveChanges();
 
-            var startingCell = db.Cells.FirstOrDefault(x => x.X == 0 && x.Y == 0 && x.Z == 0);
-            UpdateEntityCell(player, startingCell);
-            db.SaveChanges();
+            var startingCell = await db.Cells.FirstOrDefaultAsync(x => x.X == 0 && x.Y == 0 && x.Z == 0);
+            await UpdateEntityCell(player, startingCell);
+            await db.SaveChangesAsync();
 
-            var resultplayer = db.Players.FirstOrDefault(x => x.EntityId == player.EntityId);
+            var resultplayer = await db.Players.FirstOrDefaultAsync(x => x.EntityId == player.EntityId);
             return resultplayer;
         }
-        public World CreateNewWorld(string Name)
+        public async Task<World> CreateNewWorld(string Name)
         {
             var world = new World
             {
@@ -160,11 +160,11 @@ namespace MUDService.DataAccess
             };
 
             db.Worlds.Add(world);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return world;
         }
 
-        public Cell CreateNewCell(World World, int X, int Y, int Z, string Description, List<Entity> Entities)
+        public async Task<Cell> CreateNewCell(World World, int X, int Y, int Z, string Description, List<Entity> Entities)
         {
             //var world = db.Worlds.FirstOrDefault(x => x.WorldId == WorldId);
             var inventory = new Inventory
@@ -184,16 +184,16 @@ namespace MUDService.DataAccess
             };
             db.Cells.Add(cell);
             db.Inventories.Add(inventory);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return cell;
         }
 
-        public List<ChatUser> GetRelevantChatUsersForPlayerAction(Player player)
+        public async Task<List<ChatUser>> GetRelevantChatUsersForPlayerAction(Player player)
         {
-            var playerCell = GetCell(player);
-            var playerCellInventory = db.Inventories.Include(i => i.Entities).FirstOrDefault(x => x.InventoryId == playerCell.InventoryId);
+            var playerCell = await GetCell(player);
+            var playerCellInventory = await db.Inventories.Include(i => i.Entities).FirstOrDefaultAsync(x => x.InventoryId == playerCell.InventoryId);
             var playerEntities = playerCellInventory.Entities.Where(x => x.Type == Entity.EntityType.Player && x.EntityId != player.EntityId);
-            var chatUsers = db.ChatUsers.Where(x => playerEntities.Any(y => y.EntityId == x.PlayerEntityId && !x.IsMuted)).ToList();
+            var chatUsers = await db.ChatUsers.Where(x => playerEntities.Any(y => y.EntityId == x.PlayerEntityId && !x.IsMuted)).ToListAsync();
             return chatUsers;
         }
 
@@ -206,7 +206,7 @@ namespace MUDService.DataAccess
 
         public async Task UpdatePlayerIsMuted(Player player, bool IsMuted)
         {
-            var chatUsers = GetChatUsersForPlayer(player);
+            var chatUsers = await GetChatUsersForPlayer(player);
             foreach(var chatUser in chatUsers)
             {
                 chatUser.IsMuted = IsMuted;

@@ -18,11 +18,11 @@ namespace MUDService.Hubs
         {
             _mudHelper = mudHelper;
         }
-        public Task Send(string message)
+        public async Task Send(string message)
         {
             var clientMessage = JsonConvert.DeserializeObject<MUDClientMessage>(message);
 
-            var response = _mudHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.ChatUsername, clientMessage.Platform);
+            var response = await _mudHelper.ProcessPlayerInput(clientMessage.Message, clientMessage.ChatUserId, clientMessage.ChatUsername, clientMessage.Platform);
             if (response != "")
             {
                 var relevantChatUsers = new List<ChatUserDTO>();
@@ -38,11 +38,7 @@ namespace MUDService.Hubs
                     Response = response
                 };
                 var responseMessage = JsonConvert.SerializeObject(serverResponse);
-                return Clients.All.SendAsync("Send", responseMessage);
-            }
-            else
-            {
-                return Task.CompletedTask;
+                await Clients.All.SendAsync("Send", responseMessage);
             }
         }
 

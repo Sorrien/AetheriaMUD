@@ -5,17 +5,18 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using static MUDService.Models.Cell;
 
 namespace MUDService.Logic
 {
     public interface ICellLogic
     {
-        Cell GetPlayerCell(Player player);
-        string CellDescriptionForPlayer(Player player);
-        Cell GetCellRelativeToCell(Cell cell, DirectionEnum direction);
-        Cell GetCellInWorld(string worldName, int x, int y, int z);
-        void UpdateEntityCell(Entity entity, Cell newCell);
+        Task<Cell> GetPlayerCell(Player player);
+        Task<string> CellDescriptionForPlayer(Player player);
+        Task<Cell> GetCellRelativeToCell(Cell cell, DirectionEnum direction);
+        Task<Cell> GetCellInWorld(string worldName, int x, int y, int z);
+        Task UpdateEntityCell(Entity entity, Cell newCell);
     }
 
     public class CellLogic : ICellLogic
@@ -26,14 +27,14 @@ namespace MUDService.Logic
             _mudDataAccess = mudDataAccess;
         }
 
-        public Cell GetPlayerCell(Player player)
+        public async Task<Cell> GetPlayerCell(Player player)
         {
-            return _mudDataAccess.GetCell(player);
+            return await _mudDataAccess.GetCell(player);
         }
 
-        public string CellDescriptionForPlayer(Player player)
+        public async Task<string> CellDescriptionForPlayer(Player player)
         {
-            var cell = GetPlayerCell(player);
+            var cell = await GetPlayerCell(player);
             return CellDescription(cell, player);
         }
 
@@ -60,7 +61,7 @@ namespace MUDService.Logic
             return description;
         }
 
-        public Cell GetCellRelativeToCell(Cell cell, DirectionEnum direction)
+        public async Task<Cell> GetCellRelativeToCell(Cell cell, DirectionEnum direction)
         {
             Cell resultCell;
             var X = cell.X;
@@ -88,19 +89,19 @@ namespace MUDService.Logic
                     break;
             }
 
-            resultCell = _mudDataAccess.GetCellInWorld(cell.World.Name, X, Y, Z);
+            resultCell = await _mudDataAccess.GetCellInWorld(cell.World.Name, X, Y, Z);
 
             return resultCell;
         }
 
-        public Cell GetCellInWorld(string worldName, int x, int y, int z)
+        public async Task<Cell> GetCellInWorld(string worldName, int x, int y, int z)
         {
-            return _mudDataAccess.GetCellInWorld(worldName, x, y, z);
+            return await _mudDataAccess.GetCellInWorld(worldName, x, y, z);
         }
 
-        public void UpdateEntityCell(Entity entity, Cell newCell)
+        public async Task UpdateEntityCell(Entity entity, Cell newCell)
         {
-            _mudDataAccess.UpdateEntityCell(entity, newCell);
+            await _mudDataAccess.UpdateEntityCell(entity, newCell);
         }
     }
 }

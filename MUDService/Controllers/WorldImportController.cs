@@ -5,6 +5,7 @@ using MUDService.Models;
 using MUDService.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MUDService.Controllers
 {
@@ -28,9 +29,9 @@ namespace MUDService.Controllers
         }
 
         [HttpPost]
-        public IActionResult Import(WorldImportViewModel request)
+        public async Task<IActionResult> Import(WorldImportViewModel request)
         {
-            var world = _mudDataAccess.CreateNewWorld(request.WorldDefinition.Name);
+            var world = await _mudDataAccess.CreateNewWorld(request.WorldDefinition.Name);
             foreach (var jCell in request.WorldDefinition.Cells)
             {
                 var entities = new List<Entity>();
