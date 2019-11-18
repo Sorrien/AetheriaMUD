@@ -40,9 +40,8 @@ namespace MUDService.Logic
 
         public string CellDescription(Cell cell, Entity exclude)
         {
-            var stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder(cell.Description);
 
-            stringBuilder.Append(cell.Description);
             var validEntities = cell.Inventory.Entities.Where(x => x.EntityId != exclude.EntityId).ToList();
 
             if (validEntities.Count > 1)

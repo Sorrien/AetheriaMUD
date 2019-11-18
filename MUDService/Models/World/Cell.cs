@@ -1,22 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MUDService.Models
 {
     public class Cell
     {
-        public enum DirectionEnum
-        {
-            None = 0,
-            North = 10,
-            South = 20,
-            West = 30,
-            East = 40,
-            Up = 50,
-            Down = 60
-        }
         public Guid CellId { get; set; }
 
         public string Description { get; set; }
